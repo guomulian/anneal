@@ -20,7 +20,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         if isinstance(max_steps, int) and max_steps > 0:
             self.max_steps = max_steps
         else:
-            raise ValueError("max_steps must be a positive integer")
+            raise ValueError("Max steps must be a positive integer")
 
     def __str__(self):
         return "SimulatedAnnealer(step={}, temp={}, best_energy={})".format(self.step, self._temp(self.step), self.best_energy)
