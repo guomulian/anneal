@@ -81,7 +81,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         """
         pass
 
-    def temp(self, steps):
+    def temp(self, step):
         """Defines the temperature/annealing schedule for the problem.
 
         This method may be overwritten in a subclass if desired.
@@ -104,7 +104,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
     def _accept_state(self, new_state):
         """Returns True if the new_state is accepted."""
         try:
-            p = self._acceptance_probability(new_state, self._temp(self.step))
+            p = self._acceptance_probability(new_state, self.temp(self.step))
 
             if p >= 1 or p >= random.random():
                 return True
@@ -158,7 +158,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                 self.energy = self._energy(self.state)
                 self.best_energy = self.energy
 
-            if self._temp(self.step) < 0.0001:
+            if self.temp(self.step) < 0.0001:
                 if verbose != 0:
                     print("Finished - Reached temperature 0")
 
