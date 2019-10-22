@@ -23,16 +23,14 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
             raise ValueError("Max steps must be a positive integer")
 
     def __str__(self):
-        return "SimulatedAnnealer(\
-                best_state={}\
-                step={},\
-                temp={},\
-                best_energy={})" \
-                .format(self.best_state, self.step, self._temp(self.step),
-                        self.best_energy)
-
-    def __repr__(self):
-        return self.__str__()
+        pattern = """
+{}(
+    step={}/{},
+    temp={},
+    best_state={},
+    best_energy={}
+)     """
+        return pattern.format(type(self).__name__, self.step, self.max_steps, self._temp(self.step), self.best_state, self.best_energy)
 
     def _reset(self, best_state=None):
         """Resets the state of the annealer, with the possibility of
