@@ -1,11 +1,11 @@
-from anneal import SimulatedAnnealer
+import anneal
 import random
 
 
-class Rvf2Optimize(SimulatedAnnealer):
-    def __init__(self, fun, initial_state, max_steps,
-                 bounds=[[-1, 1], [-1, 1]], objective='min'):
+class Rvf2Optimize(anneal.SimulatedAnnealer):
+    """For estimating a global optimum of a function f: R^2 -> R."""
 
+    def __init__(self, fun, initial_state, max_steps, bounds, objective='min'):
         self.fun = fun
         self.objective = objective
 
@@ -55,6 +55,8 @@ class Rvf2Optimize(SimulatedAnnealer):
 
 
 if __name__ == '__main__':
+    random.seed(0)
+
     def example_1(x, y):
         return x**4-3*x**2+y**4-3*y**2+1
 
@@ -68,14 +70,14 @@ if __name__ == '__main__':
     example_1_2 = Rvf2Optimize(example_1, (2, 0), max_steps_1, bounds_1)
     example_1_3 = Rvf2Optimize(example_1, (0, 0), max_steps_1, bounds_1)
 
-    print(example_1_1.anneal())
-    print(example_1_2.anneal())
-    print(example_1_3.anneal())
+    print("Solution: {}\nMin Value: {}\n".format(*example_1_1.anneal()))
+    print("Solution: {}\nMin Value: {}\n".format(*example_1_2.anneal()))
+    print("Solution: {}\nMin Value: {}\n".format(*example_1_3.anneal()))
 
     example_2_1 = Rvf2Optimize(example_2, (1, 0), max_steps_1, bounds_1)
     example_2_2 = Rvf2Optimize(example_2, (2, 0), max_steps_1, bounds_1)
     example_2_3 = Rvf2Optimize(example_2, (0, 0), max_steps_1, bounds_1)
 
-    print(example_2_1.anneal())
-    print(example_2_2.anneal())
-    print(example_2_3.anneal())
+    print("Solution: {}\nMin Value: {}\n".format(*example_2_1.anneal()))
+    print("Solution: {}\nMin Value: {}\n".format(*example_2_2.anneal()))
+    print("Solution: {}\nMin Value: {}\n".format(*example_2_3.anneal()))
