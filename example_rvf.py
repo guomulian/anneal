@@ -1,4 +1,4 @@
-import anneal
+from anneal import anneal
 import random
 
 
@@ -16,8 +16,8 @@ class Rvf2Optimize(anneal.SimulatedAnnealer):
             raise ValueError('Invalid bounds.')
 
         # initial state must be within the bounds
-        if not bounds[0][0] <= initial_state[0] <= bounds[0][1] and \
-                not bounds[1][0] <= initial_state[1] <= bounds[1][1]:
+        if not bounds[0][0] <= initial_state[0] <= bounds[0][1]\
+                or not bounds[1][0] <= initial_state[1] <= bounds[1][1]:
             raise ValueError('Initial state is out of bounds.')
 
         super().__init__(initial_state, max_steps)
@@ -53,31 +53,40 @@ class Rvf2Optimize(anneal.SimulatedAnnealer):
         else:
             raise ValueError('Objective should be either "min" or "max".')
 
+    def formatter(self, output):
+        if self.objective == 'max':
+            return output[0], -output[1]
+        else:
+            return output
+
 
 if __name__ == '__main__':
     random.seed(0)
 
-    def example_1(x, y):
+    def f_1(x, y):
         return x**4-3*x**2+y**4-3*y**2+1
 
-    def example_2(x, y):
+    def f_2(x, y):
         return x**3 + y**3
 
-    max_steps_1 = 1000
     bounds_1 = [[-2, 2], [-2, 2]]
 
-    example_1_1 = Rvf2Optimize(example_1, (1, 0), max_steps_1, bounds_1)
-    example_1_2 = Rvf2Optimize(example_1, (2, 0), max_steps_1, bounds_1)
-    example_1_3 = Rvf2Optimize(example_1, (0, 0), max_steps_1, bounds_1)
+    example_11 = Rvf2Optimize(f_1, (1, 0), 1000, bounds_1)
+    example_12 = Rvf2Optimize(f_1, (2, 0), 1000, bounds_1)
+    example_13 = Rvf2Optimize(f_1, (0, 0), 1000, bounds_1)
 
-    print("Solution: {}\nMin Value: {}\n".format(*example_1_1.anneal()))
-    print("Solution: {}\nMin Value: {}\n".format(*example_1_2.anneal()))
-    print("Solution: {}\nMin Value: {}\n".format(*example_1_3.anneal()))
+    print("Minimizing: {}...".format(f_1))
+    print("Solution: {}\nMin Value: {}\n".format(*example_11.anneal()))
+    print("Solution: {}\nMin Value: {}\n".format(*example_12.anneal()))
+    print("Solution: {}\nMin Value: {}\n".format(*example_13.anneal()))
 
-    example_2_1 = Rvf2Optimize(example_2, (1, 0), max_steps_1, bounds_1)
-    example_2_2 = Rvf2Optimize(example_2, (2, 0), max_steps_1, bounds_1)
-    example_2_3 = Rvf2Optimize(example_2, (0, 0), max_steps_1, bounds_1)
+    bounds_2 = [[-1, 1], [-1, 1]]
 
-    print("Solution: {}\nMin Value: {}\n".format(*example_2_1.anneal()))
-    print("Solution: {}\nMin Value: {}\n".format(*example_2_2.anneal()))
-    print("Solution: {}\nMin Value: {}\n".format(*example_2_3.anneal()))
+    example_21 = Rvf2Optimize(f_2, (1, 0), 1000, bounds_2, 'max')
+    example_22 = Rvf2Optimize(f_2, (0.5, 0), 1000, bounds_2, 'max')
+    example_23 = Rvf2Optimize(f_2, (-1, 0), 1000, bounds_2, 'max')
+
+    print("Maximizing: {}".format(f_2))
+    print("Solution: {}\nMax Value: {}\n".format(*example_21.anneal()))
+    print("Solution: {}\nMax Value: {}\n".format(*example_22.anneal()))
+    print("Solution: {}\nMax Value: {}\n".format(*example_23.anneal()))

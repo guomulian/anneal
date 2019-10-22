@@ -1,4 +1,4 @@
-import anneal
+from anneal import anneal
 import collections
 import copy
 import random
