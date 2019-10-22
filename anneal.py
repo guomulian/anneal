@@ -5,7 +5,27 @@ import random
 
 
 class SimulatedAnnealer(metaclass=abc.ABCMeta):
-    """Template method pattern for perfoming simulated annealing."""
+    """Template method pattern for perfoming simulated annealing.
+
+    ...
+    
+    Attributes
+    ----------
+    step : int
+        The current step the annealer is on.
+    max_steps : int
+        The maximum number of steps the annealer is permitted to take.
+    energy : float
+        The energy of the current state, as defined by the _energy() method.
+    initial_state : <>
+        The initial state passed in. This is kept simply for the _reset() method.
+    state : <>
+        The current state.
+    best_energy : float
+        The current best energy.
+    best_state : <>
+        The current best state. The final value of this will be the solution.
+    """
 
     def __init__(self, initial_state, max_steps):
         self.step = 0
@@ -34,7 +54,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
     def _reset(self, best_state=None):
         """Resets the state of the annealer, with the possibility of
-           pre-specifying a best_state.
+           pre-specifying a "best state".
 
         """
         self.step = 0
@@ -57,14 +77,19 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
     def _energy(self, state):
         """Returns the energy of a given state.
 
-        The goal is to bring the system to a state that minimizes this value.
+        The annealing procedure will try to bring the system to a state that minimizes this value.
         """
         pass
 
-    def _temp(self, step):
-        """The annealing schedule.
+    def temp(self, steps):
+        """Defines the temperature/annealing schedule for the problem.
 
         This method may be overwritten in a subclass if desired.
+
+        Parameters
+        ----------
+        step : int
+            The number of steps elapsed.
         """
         return 1.00001 - step/self.max_steps
 
@@ -90,7 +115,20 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
             return True
 
     def anneal(self, verbose=0, debug=False):
-        """The annealing procedure."""
+        """Performs the annealing procedure.
+        
+        Parameters
+        ----------
+        verbose : int, optional
+            Must be one of 0, 1, 2.
+                0 (default) will print no output (except when debug=True, however, it will minimize the debug output)
+                1           will print less output
+                2           will print all output
+
+        debug : bool, optional
+            At the moment, setting this to True will print the current step, temperature, best state, and best energy
+            as the process goes on.
+        """
 
         if verbose not in [0,1,2]:
             raise ValueError("verbose must be one of 0 (none), 1 (less), or 2 (all).")
