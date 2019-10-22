@@ -15,22 +15,19 @@ A template method pattern for implementing simulated annealing in Python, along 
 
 One problem of [hill climbing optimization techniques](https://en.wikipedia.org/wiki/Hill_climbing) is that they run the risk of getting "stuck" in a local optimum.
 
-For example, if we apply [gradient descent](https://en.wikipedia.org/wiki/Gradient_descent) to the following function, we might find ourself in the shorter "hill" (shown on the left in the image[^1]).
+For example, if we apply [gradient descent](https://en.wikipedia.org/wiki/Gradient_descent) to the following function, we might find ourself in the shorter "hill" (shown on the left in the image).
 
-![A surface with two local maxima.][non-convex-example-image]
+[![A surface with two local maxima.][non-convex-example-image]](https://commons.wikimedia.org/wiki/File:Local_maximum.png)
 
 **[Simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing)** tries to overcome this problem by initially allowing transitions to "worse" solutions than the current one, then slowly reducing the acceptability of such "bad" transitions. This gives the algorithm the opportunity to "escape" any local optima it might find itself in initially.
 
 The **acceptance probability** of these "bad" solutions is controlled by a parameter (often referred to as the **temperature**, due to analogy with the annealing of metallurgy), which is eventually reduced to zero according to some **schedule**.
 
-For example, the schedule shown in the following image[^2] has the temperature decreasing at a rate of `0.1` per step.
+For example, the schedule shown in the following image has the temperature decreasing at a rate of `0.1` per step.
 
-![A simulated annealing search for a maximum on a noisy example function][wikipedia-image]
+[![A simulated annealing search for a maximum on a noisy example function][wikipedia-image]](https://commons.wikimedia.org/wiki/File:Hill_Climbing_with_Simulated_Annealing.gif)
 
 The [Wikipedia article for simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing) provides a more detailed overview of the algorithm.
-
-[^1]: https://commons.wikimedia.org/wiki/File:Local_maximum.png
-[^2]: https://commons.wikimedia.org/wiki/File:Hill_Climbing_with_Simulated_Annealing.gif
 
 
 ### Examples
