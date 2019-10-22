@@ -89,8 +89,11 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         except OverflowError:
             return True
 
-    def anneal(self, verbose=False, debug=False):
+    def anneal(self, verbose=0, debug=False):
         """The annealing procedure."""
+
+        if verbose not in [0,1,2]:
+            raise ValueError("verbose must be one of 0 (none), 1 (less), or 2 (all).")
 
         self._reset()
 
@@ -98,7 +101,15 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
             self.step += 1
 
             if debug:
-                print(self)
+                if verbose == 0:
+                    interval = self.max_steps // 10
+                elif verbose == 1:
+                    interval = self.max_steps // 100
+                else:
+                    interval = 1
+
+                if self.step % interval == 0:
+                    print(self)
 
             neighbor = self._neighbor()
 
@@ -110,12 +121,12 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                 self.best_energy = self.energy
 
             if self._temp(self.step) < 0.0001:
-                if verbose:
+                if verbose != 0:
                     print("Finished - Reached temperature 0")
 
                 return self.state, self.energy
 
-        if verbose:
+        if verbose != 0:
             print("Finished - Reached max steps")
 
         return self.state, self.energy
