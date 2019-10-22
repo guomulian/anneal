@@ -34,7 +34,7 @@ The [Wikipedia article for simulated annealing](https://en.wikipedia.org/wiki/Si
 
 
 ### Examples
-A number of example implementations are included in this package.
+Included are a number of well-known example use cases.
 
 - Real-valued function of two real variables
 - Sudoku
@@ -83,6 +83,8 @@ def temp(self, step):
 ```
 ##### `formatter(self, output)`
 This method is given as an option for post-processing the results of the `anneal()` method.
+
+`output` is of the form `(best_state, best_energy)`.
 
 ###### Example
 ```python
