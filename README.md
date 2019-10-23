@@ -39,13 +39,14 @@ Included are a number of well-known example use cases. (Unchecked items are not 
 - [ ] Automatic map label placement
 
 ## Installing
-To clone this repository:
+To run the examples:
 ```bash
 $ git clone https://github.com/guomulian/anneal
-```
-To install via pip:
-```bash
-$ pip install [-e] git+https://github.com/guomulian/anneal
+$ cd anneal
+
+# create/activate a virtual environment, if desired
+$ pip install [-e] .
+$ python examples/rvf2/example_rvf2.py
 ```
 
 ## Usage
