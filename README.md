@@ -31,12 +31,12 @@ The [Wikipedia article for simulated annealing](https://en.wikipedia.org/wiki/Si
 
 
 ### Examples
-Included are a number of well-known example use cases.
+Included are a number of well-known example use cases. (Unchecked items are not yet complete.)
 
-- Real-valued function of two real variables
-- Sudoku
-- Traveling salesperson
-- Automatic map label placement
+- [x] Real-valued function of two real variables
+- [x] Sudoku
+- [ ] Traveling salesperson
+- [ ] Automatic map label placement
 
 ## Installing
 
