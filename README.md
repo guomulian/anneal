@@ -39,7 +39,15 @@ Included are a number of well-known example use cases. (Unchecked items are not 
 - [ ] Automatic map label placement
 
 ## Installing
+To run the examples:
+```bash
+$ git clone https://github.com/guomulian/anneal
+$ cd anneal
 
+# create/activate a virtual environment, if desired
+$ pip install [-e] .
+$ python examples/rvf2/example_rvf2.py
+```
 
 ## Usage
 
@@ -89,12 +97,6 @@ This method is given as an option for post-processing the results of the `anneal
 def formatter(self, output):
     # only return the final state
     return output[0]
-```
-
-## Contributing
-To clone this repository:
-```bash
-$ git clone https://github.com/guomulian/anneal
 ```
 
 [wikipedia-image]: https://upload.wikimedia.org/wikipedia/commons/d/d5/Hill_Climbing_with_Simulated_Annealing.gif
