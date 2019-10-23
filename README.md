@@ -43,9 +43,8 @@ To clone this repository:
 ```bash
 $ git clone https://github.com/guomulian/anneal
 ```
-To install from source:
+To install via pip:
 ```bash
-$ cd anneal
 $ pip install [-e] git+https://github.com/guomulian/anneal
 ```
 
