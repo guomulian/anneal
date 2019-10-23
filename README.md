@@ -1,5 +1,5 @@
 # anneal
-A template method pattern for implementing simulated annealing in Python, along with implementations of several example problems.
+A template class for implementing simulated annealing in Python, along with implementations of several well-known problems.
 
 - [Overview](#overview)
     - [Algorithm](#algorithm)

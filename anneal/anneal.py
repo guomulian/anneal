@@ -121,8 +121,8 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
             return True
 
     def formatter(self, output):
-        """Function for processing the output of anneal. May be overwritten in
-        a subclass if desired.
+        """Function for processing the output of anneal. May be overwritten if
+        desired.
 
         This may be used, for example, if one wants the anneal method to output
         only the best state (or only the best energy).
