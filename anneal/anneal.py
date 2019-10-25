@@ -66,6 +66,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         self.state = copy.deepcopy(self.initial_state)
         self.energy = self._energy(self.state)
 
+        # this right now is not really helpful for anything
         if best_state:
             self.best_state = best_state
         else:
@@ -142,7 +143,8 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         return output
 
     def anneal(self, verbose=0, debug=False):
-        """Performs the annealing procedure.
+        """Tries to find the state which minimizes the energy given by the
+        _energy method via simulated annealing.
 
         Parameters
         ----------
