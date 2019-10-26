@@ -142,12 +142,20 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         return output
 
-    def anneal(self, verbose=0, debug=False):
+    def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False):
         """Tries to find the state which minimizes the energy given by the
         _energy method via simulated annealing.
 
         Parameters
         ----------
+        temp_tol : float, optional
+            The minimum allowed temperature before the program aborts. Default
+            is 0.0001.
+
+        best_state : <>, optional
+            For if you want the algorithm to start with a different state than
+            originally specified.
+
         verbose : int, optional
             Must be one of 0, 1, 2.
                 0 (default) will print no output (except when debug=True,
@@ -170,7 +178,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
             raise ValueError("verbose must be one of 0 (none), 1 (less), or 2\
                 (all).")
 
-        self._reset()
+        self._reset(best_state=best_state)
 
         for _ in range(self.max_steps):
             self.step += 1
@@ -195,7 +203,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                 self.energy = self._energy(self.state)
                 self.best_energy = self.energy
 
-            if self.temp(self.step) < 0.0001:
+            if self.temp(self.step) < temp_tol:
                 if verbose != 0:
                     print("Finished - Reached temperature 0")
                 break
