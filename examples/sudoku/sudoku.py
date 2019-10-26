@@ -60,9 +60,6 @@ class SudokuSolver(anneal.SimulatedAnnealer):
                     board[i][j] = missing.pop()
                     unknown.append((i, j))
 
-                else:
-                    continue
-
         return board, unknown
 
     @staticmethod
