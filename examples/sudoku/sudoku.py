@@ -159,9 +159,9 @@ if __name__ == '__main__':
     solver = SudokuSolver(puzzle, max_steps)
     print("Solving puzzle with max_steps = {}:".format(max_steps))
     solver.pretty_print(solver.puzzle)
-    
+
     solver.anneal()
-    
+
     print("\nSOLUTION:")
     solver.pretty_print(solver.state)
     print("Final Energy: {}".format(solver.energy))
