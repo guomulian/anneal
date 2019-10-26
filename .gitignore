@@ -2,9 +2,16 @@
 __pycache__/
 *.py[cod]
 
+# Distribution/Packaging
+*.egg-info/
+
 # Environments
 .env
 .venv
 env/
 venv/
 ENV/
+
+# Testing/Coverage reports
+.coverage
+.pytest-cache/

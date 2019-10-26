@@ -9,7 +9,7 @@ setuptools.setup(
     version="0.0.1",
     author="Anne Kwok",
     author_email="guomulian@gmail.com",
-    description="A template method pattern for implementing simulated annealing.",
+    description="A template class for implementing simulated annealing.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/guomulian/anneal",
