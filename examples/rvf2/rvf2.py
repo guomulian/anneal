@@ -1,4 +1,5 @@
 from anneal import anneal
+import pickle
 import random
 
 
@@ -60,6 +61,29 @@ class Rvf2(anneal.SimulatedAnnealer):
         else:
             return output
 
+    def debug_method(self, *args, **kwargs):
+        filename = kwargs['filename']
+
+        if self.step == 0:
+            mode = 'wb'
+        else:
+            mode = 'ab'
+
+        with open(filename, mode) as file:
+            pickle.dump(self.state, file)
+
+    @staticmethod
+    def unpickle_states(filename):
+        states = []
+
+        with open(filename, 'rb') as file:
+            while True:
+                try:
+                    states.append(pickle.load(file))
+                except EOFError:
+                    break
+        return states
+
 
 if __name__ == '__main__':
     random.seed(0)
@@ -72,9 +96,9 @@ if __name__ == '__main__':
 
     bounds_1 = [[-2, 2], [-2, 2]]
 
-    example_11 = Rvf2(f_1, (1, 0), 1000, bounds_1)
-    example_12 = Rvf2(f_1, (2, 0), 1000, bounds_1)
-    example_13 = Rvf2(f_1, (0, 0), 1000, bounds_1)
+    example_11 = rvf2.Rvf2(f_1, (1, 0), 1000, bounds_1)
+    example_12 = rvf2.Rvf2(f_1, (2, 0), 1000, bounds_1)
+    example_13 = rvf2.Rvf2(f_1, (0, 0), 1000, bounds_1)
 
     print("Minimizing: {}...".format(f_1))
     print("Solution: {}\nMin Value: {}\n".format(*example_11.anneal()))
@@ -83,9 +107,9 @@ if __name__ == '__main__':
 
     bounds_2 = [[-1, 1], [-1, 1]]
 
-    example_21 = Rvf2(f_2, (1, 0), 1000, bounds_2, 'max')
-    example_22 = Rvf2(f_2, (0.5, 0), 1000, bounds_2, 'max')
-    example_23 = Rvf2(f_2, (-1, 0), 1000, bounds_2, 'max')
+    example_21 = rvf2.Rvf2(f_2, (1, 0), 1000, bounds_2, 'max')
+    example_22 = rvf2.Rvf2(f_2, (0.5, 0), 1000, bounds_2, 'max')
+    example_23 = rvf2.Rvf2(f_2, (-1, 0), 1000, bounds_2, 'max')
 
     print("Maximizing: {}".format(f_2))
     print("Solution: {}\nMax Value: {}\n".format(*example_21.anneal()))
