@@ -143,7 +143,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         return output
 
-    def debug_method(self):
+    def debug_method(self, *args, **kwargs):
         """Defines behavior when anneal is run with debug=True. Default is to
         print __str__(self). Note that debug_method will not be run for every
         step unless verbose is set to 2.
@@ -153,7 +153,8 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         """
         print(self)
 
-    def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False):
+    def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False,
+               *args, **kwargs):
         """Tries to find the state which minimizes the energy given by the
         _energy method via simulated annealing.
 
@@ -192,8 +193,6 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         self._reset(best_state=best_state)
 
         for _ in range(self.max_steps):
-            self.step += 1
-
             if debug:
                 if verbose == 0:
                     interval = self.max_steps // 10
@@ -203,7 +202,9 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                     interval = 1
 
                 if self.step % interval == 0:
-                    self.debug_method()
+                    self.debug_method(*args, **kwargs)
+
+            self.step += 1
 
             neighbor = self._neighbor()
 
