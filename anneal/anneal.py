@@ -1,5 +1,6 @@
 import abc
 import copy
+import logging
 import math
 import random
 
@@ -142,6 +143,14 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         return output
 
+    def display(self):
+        """Determines the debug behavior. Default is to print __str__(self).
+
+        May be overwritten to display a visualization of the current state,
+        for example.
+        """
+        print(self)
+
     def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False):
         """Tries to find the state which minimizes the energy given by the
         _energy method via simulated annealing.
@@ -192,7 +201,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                     interval = 1
 
                 if self.step % interval == 0:
-                    print(self)
+                    self.display()
 
             neighbor = self._neighbor()
 
@@ -205,10 +214,10 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
             if self.temp(self.step) < temp_tol:
                 if verbose != 0:
-                    print("Finished - Reached temperature 0")
+                    logging.info("Finished - Reached temperature 0")
                 break
         else:
             if verbose != 0:
-                print("Finished - Reached max steps")
+                logging.info("Finished - Reached max steps")
 
         return self.formatter((self.state, self.energy))
