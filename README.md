@@ -98,6 +98,16 @@ def formatter(self, output):
     # only return the final state
     return output[0]
 ```
+##### `debug_method(self)`
+This is run when the `anneal` method is set with `debug=True`. May be used to visualize or perhaps pickle intermediate steps, for example.
+
+###### Example
+```python
+
+def debug_method(self):
+    # only print the current step
+    print("Current Step: {}".format(self.step))
+```
 
 [wikipedia-image]: https://upload.wikimedia.org/wikipedia/commons/d/d5/Hill_Climbing_with_Simulated_Annealing.gif
 [non-convex-example-image]: https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Local_maximum.png/260px-Local_maximum.png
