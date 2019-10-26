@@ -143,8 +143,10 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         return output
 
-    def display(self):
-        """Determines the debug behavior. Default is to print __str__(self).
+    def debug_method(self):
+        """Defines behavior when anneal is run with debug=True. Default is to
+        print __str__(self). Note that debug_method will not be run for every
+        step unless verbose is set to 2.
 
         May be overwritten to display a visualization of the current state,
         for example.
@@ -201,7 +203,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                     interval = 1
 
                 if self.step % interval == 0:
-                    self.display()
+                    self.debug_method()
 
             neighbor = self._neighbor()
 
