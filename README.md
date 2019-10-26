@@ -6,7 +6,6 @@ A template class for implementing simulated annealing in Python, along with impl
     - [Examples](#examples)
 - [Installing](#installing)
 - [Usage](#usage)
-- [Contributing](#contributing)
 
 ## Overview
 > Simulated annealing is a probabilistic technique for approximating the global optimum of a given function.
@@ -75,6 +74,15 @@ class MySolver(annealer.SimulatedAnnealer):
         """Returns a random neighbor of the current state."""
         pass
 ```
+
+Calling the `anneal()` method on your `MySolver` instance will return the optimal state and its associated energy.
+
+```python
+solver = MySolver(...)
+best_state, best_energy = solver.anneal()
+```
+
+That's all there is to it!
 
 #### Optional Methods
 ##### `temp(self, step)`
