@@ -42,8 +42,8 @@ class Rvf2(anneal.SimulatedAnnealer):
         # Make sure the coordinate stays in the bounding region.
         # There are likely better ways to do this; this is just a simple option
 
-        moved[0] = Rvf2.clip(moved[0], x_bounds[0], x_bounds[1])
-        moved[1] = Rvf2.clip(moved[1], y_bounds[0], y_bounds[1])
+        moved[0] = Rvf2.clip(moved[0], *x_bounds)
+        moved[1] = Rvf2.clip(moved[1], *y_bounds)
 
         return tuple(moved)
 
@@ -96,9 +96,9 @@ if __name__ == '__main__':
 
     bounds_1 = [[-2, 2], [-2, 2]]
 
-    example_11 = rvf2.Rvf2(f_1, (1, 0), 1000, bounds_1)
-    example_12 = rvf2.Rvf2(f_1, (2, 0), 1000, bounds_1)
-    example_13 = rvf2.Rvf2(f_1, (0, 0), 1000, bounds_1)
+    example_11 = Rvf2(f_1, (1, 0), 1000, bounds_1)
+    example_12 = Rvf2(f_1, (2, 0), 1000, bounds_1)
+    example_13 = Rvf2(f_1, (0, 0), 1000, bounds_1)
 
     print("Minimizing: {}...".format(f_1))
     print("Solution: {}\nMin Value: {}\n".format(*example_11.anneal()))
@@ -107,9 +107,9 @@ if __name__ == '__main__':
 
     bounds_2 = [[-1, 1], [-1, 1]]
 
-    example_21 = rvf2.Rvf2(f_2, (1, 0), 1000, bounds_2, 'max')
-    example_22 = rvf2.Rvf2(f_2, (0.5, 0), 1000, bounds_2, 'max')
-    example_23 = rvf2.Rvf2(f_2, (-1, 0), 1000, bounds_2, 'max')
+    example_21 = Rvf2(f_2, (1, 0), 1000, bounds_2, 'max')
+    example_22 = Rvf2(f_2, (0.5, 0), 1000, bounds_2, 'max')
+    example_23 = Rvf2(f_2, (-1, 0), 1000, bounds_2, 'max')
 
     print("Maximizing: {}".format(f_2))
     print("Solution: {}\nMax Value: {}\n".format(*example_21.anneal()))
