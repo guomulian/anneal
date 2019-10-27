@@ -5,10 +5,10 @@ import random
 
 def test_initialized_without_abstract_methods():
     with pytest.raises(TypeError):
-        anneal.SimulatedAnnealer(None, 100)
+        anneal.BaseAnnealer(None, 100)
 
 
-class AnnealerWithBadMaxSteps(anneal.SimulatedAnnealer):
+class AnnealerWithBadMaxSteps(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(None, 0)
 

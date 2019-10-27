@@ -50,13 +50,13 @@ $ python examples/rvf2/example_rvf2.py
 
 ## Usage
 
-To use, simply import the `annealer` module and subclass `SimulatedAnnealer`, making sure to define `_energy` and `_neighbor` methods.
+To use, simply import the `annealer` module and subclass `BaseAnnealer`, making sure to define `_energy` and `_neighbor` methods.
 
 ```python
 import annealer
 
 
-class MySolver(annealer.SimulatedAnnealer):
+class MySolver(annealer.BaseAnnealer):
     """Class docstring for your solver."""
 
     def __init__(self, *args, **kwargs):

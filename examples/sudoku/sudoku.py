@@ -4,7 +4,7 @@ import copy
 import random
 
 
-class SudokuSolver(anneal.SimulatedAnnealer):
+class SudokuSolver(anneal.BaseAnnealer):
     """For solving Sudoku puzzles.
 
     Randomly fills in the board from the set of missing values, then

@@ -3,7 +3,7 @@ import pickle
 import random
 
 
-class Rvf1(anneal.SimulatedAnnealer):
+class Rvf1(anneal.BaseAnnealer):
     """For estimating a global optimum of a function f: R^2 -> R."""
 
     def __init__(self, fun, initial_state, max_steps, bounds, objective='min'):
