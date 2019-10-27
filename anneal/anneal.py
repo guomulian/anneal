@@ -2,7 +2,9 @@ import abc
 import copy
 import logging
 import math
+import pickle
 import random
+import time
 
 
 class SimulatedAnnealer(metaclass=abc.ABCMeta):
@@ -134,7 +136,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         minimized; the formatter can be used to take the negative of the final
         energy.)
 
-        Paramters
+        Parameters
         ---------
         output : (<>, float)
             First argument is the best state found by the algorithm, the second
@@ -163,8 +165,60 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         if self.step % debug_interval == 0:
             self.debug_method(*args, **kwargs)
 
+    def _pickle_state(self, *args, **kwargs):
+        """Pickles the current state to a file.
+
+        Parameters
+        ----------
+        Keyword Args:
+            filename : str, optional
+                File to write to. If this is not specified, a .pickle file will
+                be created with the filename given by the class name and a
+                timestamp.
+        """
+        try:
+            filename = kwargs["filename"]
+        except KeyError:
+            timestamp = time.strftime("-%Y%m%d-%H%M%S")
+            filename = self.__class__.__name__ + timestamp + ".pickle"
+
+        if self.step == 0:
+            mode = 'wb'
+        else:
+            mode = 'ab'
+
+        self.__last_pickle = filename
+
+        with open(filename, mode) as file:
+            pickle.dump(self.state, file)
+
+    def unpickle_states(self, filename=None):
+        """Returns a list of states found in a given pickle file. If no
+        filename is provided, unpickle_states() will try to unpickle the
+        latest file pickled by anneal.
+        """
+        if not filename:
+            try:
+                filename = self.__last_pickle
+            except AttributeError as error:
+                raise FileNotFoundError(
+                    "Could not find anything to unpickle. Try first running "
+                    "anneal() with pickle=True, or run unpickle_states() with "
+                    "a filename specified.") from None
+
+        states = []
+
+        with open(filename, 'rb') as file:
+            while True:
+                try:
+                    states.append(pickle.load(file))
+                except EOFError:
+                    break
+
+        return states
+
     def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False,
-               *args, **kwargs):
+               pickle=False, *args, **kwargs):
         """Tries to find the state which minimizes the energy given by the
         _energy method via simulated annealing.
 
@@ -186,8 +240,18 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
                 2           will print all output
 
         debug : bool, optional
-            At the moment, setting this to True will print the current step,
-            temperature, best state, and best energy as the process goes on.
+            Default is False. Execute debug_method at certain intervals. By
+            default, setting this to True will display the step number,
+            temperature, best state, and best energy at each step.
+
+        pickle : bool, optional
+            Default is False. Pickle the intermediate steps and write to a
+            file, optionally given by the "filename" keyword argument.
+
+        filename : str, optional
+            File to pickle to. If not specified and pickle is set to True,
+            a timestamp will be used as the filename with the class name
+            as a prefix.
 
         Returns
         -------
@@ -204,6 +268,9 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         for _ in range(self.max_steps):
             if debug:
                 self._debug_handler(verbose, *args, **kwargs)
+
+            if pickle:
+                self._pickle_state(*args, **kwargs)
 
             self.step += 1
 

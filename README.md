@@ -107,7 +107,7 @@ def formatter(self, output):
     return output[0]
 ```
 ##### `debug_method(self)`
-This is run when the `anneal` method is set with `debug=True`. May be used to visualize or perhaps pickle intermediate steps, for example.
+This is run when the `anneal` method is set with `debug=True`. May be used to visualize intermediate steps, for example.
 
 ###### Example
 ```python
