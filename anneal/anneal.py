@@ -69,7 +69,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         # this right now is not really helpful for anything
         if best_state:
-            self.best_state = best_state
+            self.best_state = copy.deepcopy(best_state)
         else:
             self.best_state = copy.deepcopy(self.state)
 
@@ -153,6 +153,16 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         """
         print(self)
 
+    def _debug_handler(self, verbose, *args, **kwargs):
+        """Takes care of debugging with different verbosity options."""
+
+        # maps verbose to number of times to execute debug_method
+        n_intervals = {0: 10, 1: 100, 2: self.max_steps}
+        debug_interval = self.max_steps // n_intervals[verbose]
+
+        if self.step % debug_interval == 0:
+            self.debug_method(*args, **kwargs)
+
     def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False,
                *args, **kwargs):
         """Tries to find the state which minimizes the energy given by the
@@ -177,8 +187,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         debug : bool, optional
             At the moment, setting this to True will print the current step,
-            temperature, best state, and best energy
-            as the process goes on.
+            temperature, best state, and best energy as the process goes on.
 
         Returns
         -------
@@ -194,26 +203,18 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
         for _ in range(self.max_steps):
             if debug:
-                if verbose == 0:
-                    interval = self.max_steps // 10
-                elif verbose == 1:
-                    interval = self.max_steps // 100
-                else:
-                    interval = 1
-
-                if self.step % interval == 0:
-                    self.debug_method(*args, **kwargs)
+                self._debug_handler(verbose, *args, **kwargs)
 
             self.step += 1
 
             neighbor = self._neighbor()
 
             if self._accept_state(neighbor):
-                self.state = neighbor
+                self.state = copy.deepcopy(neighbor)
 
             if self._energy(self.state) < self.energy:
                 self.energy = self._energy(self.state)
-                self.best_state = self.state
+                self.best_state = copy.deepcopy(self.state)
                 self.best_energy = self.energy
 
             if self.temp(self.step) < temp_tol:
