@@ -7,7 +7,7 @@ import random
 import time
 
 
-class SimulatedAnnealer(metaclass=abc.ABCMeta):
+class BaseAnnealer(metaclass=abc.ABCMeta):
     """Template method pattern for perfoming simulated annealing.
 
     ...
@@ -131,7 +131,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
         This may be used, for example, if one wants the anneal method to output
         only the best state (or only the best energy).
 
-        Another possible use is if one wants to use SimulatedAnnealer to search
+        Another possible use is if one wants to use BaseAnnealer to search
         for a global maximum rather than a minimum. (By default, energy will be
         minimized; the formatter can be used to take the negative of the final
         energy.)
