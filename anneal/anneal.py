@@ -213,6 +213,7 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
 
             if self._energy(self.state) < self.energy:
                 self.energy = self._energy(self.state)
+                self.best_state = self.state
                 self.best_energy = self.energy
 
             if self.temp(self.step) < temp_tol:
@@ -223,4 +224,4 @@ class SimulatedAnnealer(metaclass=abc.ABCMeta):
             if verbose != 0:
                 logging.info("Finished - Reached max steps")
 
-        return self.formatter((self.state, self.energy))
+        return self.formatter((self.best_state, self.best_energy))
