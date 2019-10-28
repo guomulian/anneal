@@ -1,4 +1,4 @@
-from anneal import anneal
+from anneal import anneal, helpers
 import pickle
 import random
 
@@ -23,12 +23,7 @@ class Rvf2(anneal.BaseAnnealer):
 
         super().__init__(initial_state, max_steps)
 
-    @staticmethod
-    def clip(item, lower, upper):
-        """Clip item to be in [lower, upper]."""
-        return max(lower, min(item, upper))
-
-    def _neighbor(self):
+    def _neighbor(self, state):
         x_bounds, y_bounds = self.bounds
 
         dx = 0.1*abs(x_bounds[1]-x_bounds[0])
@@ -37,15 +32,13 @@ class Rvf2(anneal.BaseAnnealer):
         dx *= random.uniform(-1, 1)
         dy *= random.uniform(-1, 1)
 
-        moved = list(map(sum, zip(self.state, (dx, dy))))
-
         # Make sure the coordinate stays in the bounding region.
         # There are likely better ways to do this; this is just a simple option
 
-        moved[0] = Rvf2.clip(moved[0], *x_bounds)
-        moved[1] = Rvf2.clip(moved[1], *y_bounds)
+        x = helpers.clip(state[0] + dx, *x_bounds)
+        y = helpers.clip(state[1] + dy, *y_bounds)
 
-        return tuple(moved)
+        return (x, y)
 
     def _energy(self, state):
         if self.objective == 'min':
@@ -60,58 +53,3 @@ class Rvf2(anneal.BaseAnnealer):
             return output[0], -output[1]
         else:
             return output
-
-    def debug_method(self, *args, **kwargs):
-        filename = kwargs['filename']
-
-        if self.step == 0:
-            mode = 'wb'
-        else:
-            mode = 'ab'
-
-        with open(filename, mode) as file:
-            pickle.dump(self.state, file)
-
-    @staticmethod
-    def unpickle_states(filename):
-        states = []
-
-        with open(filename, 'rb') as file:
-            while True:
-                try:
-                    states.append(pickle.load(file))
-                except EOFError:
-                    break
-        return states
-
-
-if __name__ == '__main__':
-    random.seed(0)
-
-    def f_1(x, y):
-        return x**4-3*x**2+y**4-3*y**2+1
-
-    def f_2(x, y):
-        return x**3 + y**3
-
-    bounds_1 = [[-2, 2], [-2, 2]]
-
-    example_11 = Rvf2(f_1, (1, 0), 1000, bounds_1)
-    example_12 = Rvf2(f_1, (2, 0), 1000, bounds_1)
-    example_13 = Rvf2(f_1, (0, 0), 1000, bounds_1)
-
-    print("Minimizing: {}...".format(f_1))
-    print("Solution: {}\nMin Value: {}\n".format(*example_11.anneal()))
-    print("Solution: {}\nMin Value: {}\n".format(*example_12.anneal()))
-    print("Solution: {}\nMin Value: {}\n".format(*example_13.anneal()))
-
-    bounds_2 = [[-1, 1], [-1, 1]]
-
-    example_21 = Rvf2(f_2, (1, 0), 1000, bounds_2, 'max')
-    example_22 = Rvf2(f_2, (0.5, 0), 1000, bounds_2, 'max')
-    example_23 = Rvf2(f_2, (-1, 0), 1000, bounds_2, 'max')
-
-    print("Maximizing: {}".format(f_2))
-    print("Solution: {}\nMax Value: {}\n".format(*example_21.anneal()))
-    print("Solution: {}\nMax Value: {}\n".format(*example_22.anneal()))
-    print("Solution: {}\nMax Value: {}\n".format(*example_23.anneal()))

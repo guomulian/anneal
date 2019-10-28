@@ -1,5 +1,6 @@
 [report]
 exclude_lines =
+    pragma: no cover
     __str__
     pass
 
@@ -9,3 +10,4 @@ omit =
     venv/*
     *.egg-info/*
     setup.py
+    *_example.py

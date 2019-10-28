@@ -34,7 +34,7 @@ class SudokuSolver(anneal.BaseAnnealer):
     @staticmethod
     def pretty_print(board):
         """Prints the board in a readable format."""
-        for row in board:
+        for row in board:  # pragma: no cover
             print(row)
 
     @staticmethod
@@ -80,7 +80,7 @@ class SudokuSolver(anneal.BaseAnnealer):
 
     @staticmethod
     def block(block_index, board):
-        """Returns the block of a given board."""
+        """Returns a (flattened) block of a given board."""
         return [board[i][j] for i, j in
                 SudokuSolver.block_indices(block_index)]
 
@@ -89,7 +89,7 @@ class SudokuSolver(anneal.BaseAnnealer):
         """Returns a list of the 3x3 blocks."""
         return [SudokuSolver.block(b, board) for b in range(9)]
 
-    def _neighbor(self):
+    def _neighbor(self, state):
         """Returns a randomly selected "neighboring" board.
 
         First, we pick a random 3x3 block. Then, we randomly pick two "unknown"
@@ -112,9 +112,14 @@ class SudokuSolver(anneal.BaseAnnealer):
             else:
                 break
 
+        else:
+            # len(candidates) < 2 in every block;
+            # puzzle should be already solved
+            return state
+
         (i1, j1), (i2, j2) = random.sample(candidates, 2)
 
-        neighbor = copy.deepcopy(self.state)
+        neighbor = copy.deepcopy(state)
 
         neighbor[i1][j1], neighbor[i2][j2] = neighbor[i2][j2], neighbor[i1][j1]
 
@@ -131,42 +136,3 @@ class SudokuSolver(anneal.BaseAnnealer):
         col_score = sum(-len(set(col)) for col in map(list, zip(*state)))
 
         return row_score + col_score
-
-
-if __name__ == '__main__':
-
-    puzzle = [[0, 0, 0, 2, 6, 0, 7, 0, 1],
-              [6, 8, 0, 0, 7, 0, 0, 9, 0],
-              [1, 9, 0, 0, 0, 4, 5, 0, 0],
-              [8, 2, 0, 1, 0, 0, 0, 4, 0],
-              [0, 0, 4, 6, 0, 2, 9, 0, 0],
-              [0, 5, 0, 0, 0, 3, 0, 2, 8],
-              [0, 0, 9, 3, 0, 0, 0, 7, 4],
-              [0, 4, 0, 0, 5, 0, 0, 3, 6],
-              [7, 0, 3, 0, 1, 8, 0, 0, 0]]
-
-    solution = [[4, 3, 5, 2, 6, 9, 7, 8, 1],
-                [6, 8, 2, 5, 7, 1, 4, 9, 3],
-                [1, 9, 7, 8, 3, 4, 5, 6, 2],
-                [8, 2, 6, 1, 9, 5, 3, 4, 7],
-                [3, 7, 4, 6, 8, 2, 9, 1, 5],
-                [9, 5, 1, 7, 4, 3, 6, 2, 8],
-                [5, 1, 9, 3, 2, 6, 8, 7, 4],
-                [2, 4, 8, 9, 5, 7, 1, 3, 6],
-                [7, 6, 3, 4, 1, 8, 2, 5, 9]]
-
-    max_steps = 1000
-    solver = SudokuSolver(puzzle, max_steps)
-    print("Solving puzzle with max_steps = {}:".format(max_steps))
-    solver.pretty_print(solver.puzzle)
-
-    solver.anneal()
-
-    print("\nSOLUTION:")
-    solver.pretty_print(solver.state)
-    print("Final Energy: {}".format(solver.energy))
-
-    if solver.state == solution:
-        print("Solved correctly!")
-    else:
-        print("Not quite solved. Try increasing max_steps.")
