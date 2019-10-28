@@ -82,12 +82,12 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         self.best_energy = self._energy(self.best_state)
 
     @abc.abstractmethod
-    def _neighbor(self, state):
+    def _neighbor(self, state):  # pragma: no cover
         """Returns a random neighbor of a given state."""
         pass
 
     @abc.abstractmethod
-    def _energy(self, state):
+    def _energy(self, state):  # pragma: no cover
         """Returns the energy of a given state.
 
         The annealing procedure will try to bring the system to a state that
