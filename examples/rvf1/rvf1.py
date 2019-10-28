@@ -4,7 +4,7 @@ import random
 
 
 class Rvf1(anneal.BaseAnnealer):
-    """For estimating a global optimum of a function f: R^2 -> R."""
+    """For estimating a global optimum of a function f: R -> R."""
 
     def __init__(self, fun, initial_state, max_steps, bounds, objective='min'):
         self.fun = fun
