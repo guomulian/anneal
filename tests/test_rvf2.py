@@ -1,4 +1,5 @@
 from examples.rvf2 import rvf2
+from anneal import helpers
 import pytest
 import random
 import math
@@ -30,14 +31,6 @@ def test_initialized_with_initial_point_out_of_bounds():
         rvf2.Rvf2(None, (2, 0), 1000, [[-1, 1], [-1, 1]])
 
 
-def test_clip():
-    # lower == upper
-    assert rvf2.Rvf2.clip(2, 1, 1) == 1
-
-    # item within bounds
-    assert rvf2.Rvf2.clip(0, -1, 1) == 0
-
-
 def test_optimum_inside_bounds():
     random.seed(0)
 
@@ -55,17 +48,13 @@ def test_optimum_inside_bounds():
                         (-math.sqrt(3/2), math.sqrt(3/2))]
     min_value_actual = -7/2
 
+    # tolerances
     tol_point = 0.1
     tol_value = 0.01
 
-    def distance(p1, p2):
-        return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
-
-    min_point_passed = list(map(lambda p: distance(min_point, p) < tol_point,
-                            min_point_actual))
-
     assert abs(min_value - min_value_actual) < tol_value
-    assert any(min_point_passed)
+    assert any(map(lambda p: helpers.distance(min_point, p) < tol_point,
+                   min_point_actual))
 
 
 def test_optimum_on_bounds():

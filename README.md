@@ -70,8 +70,8 @@ class MySolver(annealer.BaseAnnealer):
         """Returns the energy of a given state."""
         pass
 
-    def _neighbor(self):
-        """Returns a random neighbor of the current state."""
+    def _neighbor(self, state):
+        """Returns a random neighbor of the given state."""
         pass
 ```
 

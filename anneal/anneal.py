@@ -69,7 +69,6 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         self.state = copy.deepcopy(self.initial_state)
         self.energy = self._energy(self.state)
 
-        # this right now is not really helpful for anything
         if best_state:
             self.best_state = copy.deepcopy(best_state)
         else:
@@ -78,8 +77,8 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         self.best_energy = self._energy(self.best_state)
 
     @abc.abstractmethod
-    def _neighbor(self):
-        """Returns a random neighbor of the current state."""
+    def _neighbor(self, state):
+        """Returns a random neighbor of a given state."""
         pass
 
     @abc.abstractmethod
@@ -218,7 +217,8 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         return states
 
     def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False,
-               pickle=False, *args, **kwargs):
+               pickle=False, energy_exit_rounds=0, energy_exit_tol=0, *args,
+               **kwargs):
         """Tries to find the state which minimizes the energy given by the
         _energy method via simulated annealing.
 
@@ -229,8 +229,8 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             is 0.0001.
 
         best_state : <>, optional
-            For if you want the algorithm to start with a different state than
-            originally specified.
+            For if you want the algorithm to start with a specific "best
+            state".
 
         verbose : int, optional
             Must be one of 0, 1, 2.
@@ -274,7 +274,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
             self.step += 1
 
-            neighbor = self._neighbor()
+            neighbor = self._neighbor(copy.deepcopy(self.state))
 
             if self._accept_state(neighbor):
                 self.state = copy.deepcopy(neighbor)
