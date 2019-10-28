@@ -4,7 +4,10 @@ import logging
 import math
 import pickle
 import random
-import time
+from collections import deque
+from anneal import helpers
+
+logging.basicConfig(level=logging.INFO)
 
 
 class BaseAnnealer(metaclass=abc.ABCMeta):
@@ -56,9 +59,14 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                     best_state={},
                     best_energy={}
                 )     """
-        return pattern.format(type(self).__name__, self.step, self.max_steps,
-                              self.temp(self.step), self.state, self.energy,
-                              self.best_state, self.best_energy)
+        return pattern.format(type(self).__name__,
+                              self.step,
+                              self.max_steps,
+                              self.temperature(self.step),
+                              self.state,
+                              self.energy,
+                              self.best_state,
+                              self.best_energy)
 
     def _reset(self, best_state=None):
         """Resets the state of the annealer, with the possibility of
@@ -90,7 +98,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         """
         pass
 
-    def temp(self, step):
+    def temperature(self, step):
         """Defines the temperature/annealing schedule for the problem.
 
         This method may be overwritten in a subclass if desired.
@@ -113,7 +121,8 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
     def _accept_state(self, new_state):
         """Returns True if the new_state is accepted."""
         try:
-            p = self._acceptance_probability(new_state, self.temp(self.step))
+            temp = self.temperature(self.step)
+            p = self._acceptance_probability(new_state, temp)
 
             if p >= 1 or p >= random.random():
                 return True
@@ -170,16 +179,15 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         Parameters
         ----------
         Keyword Args:
-            filename : str, optional
+            pickle_file : str, optional
                 File to write to. If this is not specified, a .pickle file will
                 be created with the filename given by the class name and a
                 timestamp.
         """
         try:
-            filename = kwargs["filename"]
+            filename = kwargs["pickle_file"]
         except KeyError:
-            timestamp = time.strftime("-%Y%m%d-%H%M%S")
-            filename = self.__class__.__name__ + timestamp + ".pickle"
+            filename = helpers.generate_filename(self, ".pickle")
 
         if self.step == 0:
             mode = 'wb'
@@ -216,18 +224,45 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         return states
 
-    def anneal(self, temp_tol=0.0001, best_state=None, verbose=0, debug=False,
-               pickle=False, energy_exit_rounds=0, energy_exit_tol=0, *args,
-               **kwargs):
+    def _energy_exit_handler(self, energy, tol):
+        try:
+            if abs(self.__energy_queue[-1] - energy) < tol:
+                self.__energy_queue.append(energy)
+            else:
+                self.__energy_queue.clear()
+                self.__energy_queue.append(energy)
+
+        except AttributeError:
+            pass
+
+    def _energy_break(self, energy_exit_rounds):
+        try:
+            self.__energy_queue
+        except AttributeError:
+            return False
+
+        if len(self.__energy_queue) == energy_exit_rounds:
+            return True
+        else:
+            return False
+
+    def _temp_break(self, temp_tol):
+        return self.temperature(self.step) < temp_tol
+
+    def anneal(self,
+               best_state=None,
+               verbose=0,
+               debug=False,
+               pickle=False,
+               energy_exit_rounds=-1,
+               energy_exit_tol=-1,
+               temp_tol=0.0001,
+               *args, **kwargs):
         """Tries to find the state which minimizes the energy given by the
         _energy method via simulated annealing.
 
         Parameters
         ----------
-        temp_tol : float, optional
-            The minimum allowed temperature before the program aborts. Default
-            is 0.0001.
-
         best_state : <>, optional
             For if you want the algorithm to start with a specific "best
             state".
@@ -235,7 +270,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         verbose : int, optional
             Must be one of 0, 1, 2.
                 0 (default) will print no output (except when debug=True,
-                            however, it will minimize the debug output)
+                            where it will print minimal output)
                 1           will print less output
                 2           will print all output
 
@@ -246,22 +281,29 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         pickle : bool, optional
             Default is False. Pickle the intermediate steps and write to a
-            file, optionally given by the "filename" keyword argument.
+            file, optionally given by the pickle_filen keyword argument.
 
-        filename : str, optional
+        pickle_file : str, optional
             File to pickle to. If not specified and pickle is set to True,
             a timestamp will be used as the filename with the class name
             as a prefix.
 
         energy_exit_rounds : int, optional
+            Number of rounds of "slowly changing energy" to allow before
+            exiting. Must be at least 2. Default value is -1 (algorithm will
+            not terminate in this manner).
+
             If the change in energy remains within some tolerance (specified
             with energy_exit_tol) for energy_exit_rounds rounds, the algorithm
             will abort early and return the best state and energy found up to
-            that point. Default value is 0 (algorithm will not abort in this
-            manner).
+            that point.
 
         energy_exit_tol : float, optional
-            Tolerance for energy_exit_rounds. Default value is 0.
+            Tolerance for energy_exit_rounds. Default value is -1.
+
+        temp_tol : float, optional
+            The minimum allowed temperature before the program aborts. Default
+            is 0.0001.
 
         Returns
         -------
@@ -272,6 +314,13 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         if verbose not in [0, 1, 2]:
             raise ValueError("verbose must be one of 0 (none), 1 (less), or 2\
                 (all).")
+
+        if not isinstance(energy_exit_rounds, int):
+            raise TypeError("energy_exit_rounds must be an int.")
+
+        if energy_exit_rounds > 1 and energy_exit_tol > 0:
+            self.__energy_queue = deque([self.energy],
+                                        maxlen=energy_exit_rounds)
 
         self._reset(best_state=best_state)
 
@@ -287,19 +336,39 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             neighbor = self._neighbor(copy.deepcopy(self.state))
 
             if self._accept_state(neighbor):
+                new_energy = self._energy(neighbor)
+
+                if new_energy < self.energy:
+                    self.energy = new_energy
+                    self.best_state = copy.deepcopy(neighbor)
+                    self.best_energy = new_energy
+
                 self.state = copy.deepcopy(neighbor)
 
-            if self._energy(self.state) < self.energy:
-                self.energy = self._energy(self.state)
-                self.best_state = copy.deepcopy(self.state)
-                self.best_energy = self.energy
+                self._energy_exit_handler(new_energy, energy_exit_tol)
 
-            if self.temp(self.step) < temp_tol:
+                # Test for energy break
+                if self._energy_break(energy_exit_rounds):
+                    if verbose != 0:
+                        logging.info("Finished - Energy within tolerance for "
+                                     "{} rounds (tol = {})."
+                                     .format(energy_exit_rounds,
+                                             energy_exit_tol))
+                    break
+
+            # Test for temperature break
+            if self._temp_break(temp_tol):
                 if verbose != 0:
-                    logging.info("Finished - Reached temperature 0")
+                    logging.info("Finished - Reached temperature tolerance"
+                                 "(tol = {}).".format(temp_tol))
                 break
         else:
             if verbose != 0:
-                logging.info("Finished - Reached max steps")
+                logging.info("Finished - Reached max steps"
+                             "(max_steps = {}).".format(self.max_steps))
+
+        # if there was a break, pickle last state
+        if pickle:
+            self._pickle_state(*args, **kwargs)
 
         return self.formatter((self.best_state, self.best_energy))

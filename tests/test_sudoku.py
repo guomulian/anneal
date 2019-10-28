@@ -1,6 +1,8 @@
 from examples.sudoku.sudoku import SudokuSolver
+from anneal import helpers
 import pytest
 import random
+import os
 
 
 @pytest.fixture
@@ -138,3 +140,19 @@ def test_neighbor_on_already_solved(solver, puzzle_valid_solution):
     neighbor = s._neighbor(state)
 
     assert state == neighbor
+
+
+def test_energy_exit_on_solved_puzzle(tmpdir, solver, puzzle_valid_solution):
+    file = tmpdir.join(helpers.generate_filename(SudokuSolver, ".pickle"))
+
+    random.seed(0)
+
+    rounds = 3
+
+    s = solver(puzzle_valid_solution)
+    s.anneal(pickle=True, pickle_file=file, energy_exit_rounds=rounds,
+             energy_exit_tol=0.05)
+
+    states = s.unpickle_states()
+
+    assert len(states) == rounds

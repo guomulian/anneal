@@ -85,12 +85,12 @@ best_state, best_energy = solver.anneal()
 That's all there is to it!
 
 #### Optional Methods
-##### `temp(self, step)`
-The `temp` method, which provides the annealing schedule, may also be overwritten if desired. The default is for the temperature to decrease at a constant rate from `1` towards `0`, where the rate is `-1/max_steps`. 
+##### `temperature(self, step)`
+The `temperature` method, which provides the annealing schedule, may also be overwritten if desired. The default is for the temperature to decrease at a constant rate from `1` towards `0`, where the rate is `-1/max_steps`. 
 
 ###### Example
 ```python
-def temp(self, step):
+def temperature(self, step):
     # exponential scheme
     return 0.8**step
 ```

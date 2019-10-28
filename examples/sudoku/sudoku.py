@@ -32,10 +32,10 @@ class SudokuSolver(anneal.BaseAnnealer):
         super().__init__(initial_state, max_steps)
 
     @staticmethod
-    def pretty_print(board):
+    def pretty_print(board):  # pragma: no cover
         """Prints the board in a readable format."""
-        for row in board:  # pragma: no cover
-            print(row)
+        result = '\n'.join(' '.join(map(str, row)) for row in board)
+        return '\n' + result + '\n'
 
     @staticmethod
     def fill_puzzle(board):

@@ -50,7 +50,7 @@ if __name__ == '__main__':
     zp = fun(xp, yp)
     sp = np.array(range(len(intermediate_states)))
     ep = np.array(list(map(solver._energy, intermediate_states)))
-    tp = np.array(list(map(solver.temp, sp)))
+    tp = np.array(list(map(solver.temperature, sp)))
 
     steps = 100
     x = np.linspace(*bounds[0], num=steps)
