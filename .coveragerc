@@ -2,7 +2,6 @@
 exclude_lines =
     pragma: no cover
     __str__
-    pass
 
 [run]
 omit =

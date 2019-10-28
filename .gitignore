@@ -18,3 +18,4 @@ ENV/
 # Testing/Coverage reports
 .coverage
 .pytest-cache/
+htmlcov/

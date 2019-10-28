@@ -46,7 +46,7 @@ $ cd anneal
 
 # create/activate a virtual environment, if desired
 $ pip install [-e] .
-$ python examples/rvf2/example_rvf2.py
+$ python examples/rvf2/rvf2_example.py
 ```
 
 ## Usage
