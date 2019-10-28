@@ -253,6 +253,16 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             a timestamp will be used as the filename with the class name
             as a prefix.
 
+        energy_exit_rounds : int, optional
+            If the change in energy remains within some tolerance (specified
+            with energy_exit_tol) for energy_exit_rounds rounds, the algorithm
+            will abort early and return the best state and energy found up to
+            that point. Default value is 0 (algorithm will not abort in this
+            manner).
+
+        energy_exit_tol : float, optional
+            Tolerance for energy_exit_rounds. Default value is 0.
+
         Returns
         -------
         (<>, float)
