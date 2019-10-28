@@ -7,8 +7,6 @@ import random
 from collections import deque
 from anneal import helpers
 
-logging.basicConfig(level=logging.INFO)
-
 
 class BaseAnnealer(metaclass=abc.ABCMeta):
     """Template method pattern for perfoming simulated annealing.
@@ -50,15 +48,14 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             raise ValueError("Max steps must be a positive integer")
 
     def __str__(self):
-        pattern = """
-                {}(
-                    step={}/{},
-                    temp={},
-                    state={},
-                    energy={},
-                    best_state={},
-                    best_energy={}
-                )     """
+        pattern = "{}(\n"\
+                  "\tstep={},\n"\
+                  "\tmax_steps={},\n"\
+                  "\ttemp={},\n"\
+                  "\tstate={},\n"\
+                  "\tenergy={},\n"\
+                  "\tbest_state={},\n"\
+                  "\tbest_energy={}\n)"
         return pattern.format(type(self).__name__,
                               self.step,
                               self.max_steps,
@@ -153,7 +150,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         return output
 
-    def debug_method(self, *args, **kwargs):
+    def debug_method(self, *args, **kwargs):  # pragma: no cover
         """Defines behavior when anneal is run with debug=True. Default is to
         print __str__(self). Note that debug_method will not be run for every
         step unless verbose is set to 2.

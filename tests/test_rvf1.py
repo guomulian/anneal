@@ -1,4 +1,4 @@
-from examples.rvf1 import rvf1
+from examples.rvf1.rvf1 import Rvf1
 from anneal import helpers
 import pytest
 import random
@@ -6,28 +6,28 @@ import random
 
 def test_initialized_with_bad_bounds():
     with pytest.raises(ValueError):
-        rvf1.Rvf1(None, 0, 1000, [1, -1])
+        Rvf1(None, 0, 1000, [1, -1])
 
     with pytest.raises(ValueError):
-        rvf1.Rvf1(None, 0, 1000, [1, 1])
+        Rvf1(None, 0, 1000, [1, 1])
 
 
 def test_initialized_with_bad_function():
     with pytest.raises(TypeError):
-        rvf1.Rvf1(None, 0, 1000, [-1, 1])
+        Rvf1(None, 0, 1000, [-1, 1])
 
     with pytest.raises(TypeError):
-        rvf1.Rvf1('Not a function', 0, 1000, [-1, 1])
+        Rvf1('Not a function', 0, 1000, [-1, 1])
 
 
 def test_initialized_with_bad_objective():
     with pytest.raises(ValueError):
-        rvf1.Rvf1(None, 0, 1000, [-1, 1], 'blah')
+        Rvf1(None, 0, 1000, [-1, 1], 'blah')
 
 
 def test_initialized_with_initial_point_out_of_bounds():
     with pytest.raises(ValueError):
-        rvf1.Rvf1(None, 2, 1000, [-1, 1])
+        Rvf1(None, 2, 1000, [-1, 1])
 
 
 def test_optimum_inside_bounds():
@@ -39,7 +39,7 @@ def test_optimum_inside_bounds():
     initial_point = -1
     max_steps = 1000
     bounds = [-2, 2]
-    optimizer = rvf1.Rvf1(fun, initial_point, max_steps, bounds)
+    optimizer = Rvf1(fun, initial_point, max_steps, bounds)
     min_point, min_value = optimizer.anneal()
 
     min_point_actual = 0
@@ -62,7 +62,7 @@ def test_optimum_on_bounds():
     max_steps = 1000
     bounds = [-1, 1]
     objective = 'max'
-    optimizer = rvf1.Rvf1(fun, initial_point, max_steps, bounds, objective)
+    optimizer = Rvf1(fun, initial_point, max_steps, bounds, objective)
     max_point, max_value = optimizer.anneal()
 
     assert max_point == -1
