@@ -325,11 +325,6 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             if debug:
                 self._debug_handler(verbose, *args, **kwargs)
 
-            if pickle:
-                self._pickle_state(*args, **kwargs)
-
-            self.step += 1
-
             neighbor = self._neighbor(copy.deepcopy(self.state))
 
             if self._accept_state(neighbor):
@@ -343,6 +338,9 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                 self.state = copy.deepcopy(neighbor)
 
                 self._energy_exit_handler(new_energy, energy_exit_tol)
+
+                if pickle:
+                    self._pickle_state(*args, **kwargs)
 
                 # Test for energy break
                 if self._energy_break(energy_exit_rounds):
@@ -359,6 +357,9 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                     logging.info("Finished - Reached temperature tolerance"
                                  "(tol = {}).".format(temp_tol))
                 break
+
+            self.step += 1
+
         else:
             if verbose != 0:
                 logging.info("Finished - Reached max steps"
