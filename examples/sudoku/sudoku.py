@@ -35,7 +35,7 @@ class SudokuSolver(anneal.BaseAnnealer):
     def pretty_print(board):  # pragma: no cover
         """Prints the board in a readable format."""
         result = '\n'.join(' '.join(map(str, row)) for row in board)
-        return '\n' + result + '\n'
+        print(result)
 
     @staticmethod
     def fill_puzzle(board):
