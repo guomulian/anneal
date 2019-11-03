@@ -188,29 +188,29 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         if self.step % debug_interval == 0:
             self.debug_method(*args, **kwargs)
 
-    def _pickle_state(self, *args, **kwargs):
+    def _pickle_state(self, pickle_file=None):
         """Pickles the current state to a file.
 
         Parameters
         ----------
         pickle_file : str, optional
+            Default is None.
+
             File to write to. If this is not specified, a .pickle file will
             be created with the filename given by the class name and a
             timestamp.
         """
-        try:
-            filename = kwargs["pickle_file"]
-        except KeyError:
-            filename = helpers.generate_filename(self, ".pickle")
+        if pickle_file is None:
+            pickle_file = helpers.generate_filename(self, ".pickle")
 
         if self.step == 0:
             mode = 'wb'
         else:
             mode = 'ab'
 
-        self.__last_pickle = filename
+        self.__last_pickle = pickle_file
 
-        with open(filename, mode) as file:
+        with open(pickle_file, mode) as file:
             pickle.dump(self.state, file)
 
     def unpickle_states(self, filename=None):
@@ -394,7 +394,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                 self._energy_exit_handler(new_energy, energy_exit_tol)
 
                 if pickle:
-                    self._pickle_state(*args, **kwargs)
+                    self._pickle_state(pickle_file)
 
                 # Test for energy break
                 if self._energy_break(energy_exit_rounds):
@@ -421,7 +421,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         # if there was a break, pickle last state
         if pickle:
-            self._pickle_state(*args, **kwargs)
+            self._pickle_state(pickle_file)
 
         return self.formatter((self.best_state, self.best_energy))
 
