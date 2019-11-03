@@ -35,7 +35,7 @@ Included are implementations of a few example use cases. (Unchecked items are no
 - [x] [Real-valued function of one real variable](./examples/rvf1/)
 - [x] [Real-valued function of two real variables](./examples/rvf2/)
 - [x] [Sudoku](./examples/sudoku/)
-- [ ] Traveling salesperson
+- [x] [Traveling salesperson](./examples/tsp/)
 - [ ] Automatic map label placement
 
 ## Installing
