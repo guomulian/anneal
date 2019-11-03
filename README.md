@@ -44,7 +44,8 @@ To run the examples:
 $ git clone https://github.com/guomulian/anneal
 $ cd anneal
 
-# create/activate a virtual environment, if desired
+# create/activate virtual environment
+$ pip install -r requirements.txt
 $ pip install [-e] .
 $ python examples/rvf2/rvf2_example.py
 ```

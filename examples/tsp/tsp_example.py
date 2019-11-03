@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-random.seed(0)
+random.seed(1)
 
-n_points = 30
+n_points = 20
 max_steps = 10000
 cities = [(random.uniform(-10, 10), random.uniform(-10, 10))
           for _ in range(n_points)]
