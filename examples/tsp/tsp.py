@@ -7,10 +7,11 @@ import copy
 class TravelingSalesPerson(anneal.BaseAnnealer):
     def __init__(self, cities, max_steps):
         if not len(cities) > 0:
-            raise RuntimeError("cities must be a non-empty list.")
+            raise ValueError("cities must be a non-empty list.")
 
-        random.shuffle(cities)
-        super().__init__(cities, max_steps)
+        initial_state = copy.deepcopy(cities)
+        random.shuffle(initial_state)
+        super().__init__(initial_state, max_steps)
 
     @staticmethod
     def distance(p1, p2):
@@ -21,7 +22,7 @@ class TravelingSalesPerson(anneal.BaseAnnealer):
         total_distance = 0
         n = len(state)
 
-        for i in range(n + 1):
+        for i in range(n):
             total_distance += TravelingSalesPerson.distance(state[(i + 1) % n],
                                                             state[i % n])
 
@@ -33,14 +34,14 @@ class TravelingSalesPerson(anneal.BaseAnnealer):
         neighbor = copy.deepcopy(self.state)
 
         # start of the subroute
-        start_point = random.randrange(n)
+        subroute_start = random.randrange(n)
 
         # length of the subroute
         subroute_length = random.randrange(2, n-1)
 
-        for i in range(start_point, start_point + subroute_length // 2):
+        for i in range(subroute_start, subroute_start + subroute_length // 2):
             a = i % n
-            b = (start_point + subroute_length - i) % n
+            b = (subroute_length - i) % n
             neighbor[a], neighbor[b] = neighbor[b], neighbor[a]
 
         return neighbor
