@@ -61,17 +61,13 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                   "\tstep={},\n"\
                   "\tmax_steps={},\n"\
                   "\ttemp={},\n"\
-                  "\tstate={},\n"\
                   "\tenergy={},\n"\
-                  "\tbest_state={},\n"\
                   "\tbest_energy={}\n)"
         return pattern.format(type(self).__name__,
                               self.step,
                               self.max_steps,
                               self.temperature(self.step),
-                              self.state,
                               self.energy,
-                              self.best_state,
                               self.best_energy)
 
     def _check_max_steps(self, max_steps):
