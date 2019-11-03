@@ -51,21 +51,21 @@ $ python examples/rvf2/rvf2_example.py
 
 ## Usage
 
-To use, simply import the `annealer` module and subclass `BaseAnnealer`, making sure to define `_energy` and `_neighbor` methods.
+To use, simply import the `anneal` module and subclass `BaseAnnealer`, making sure to define `_energy` and `_neighbor` methods.
 
 ```python
-import annealer
+import anneal
 
 
-class MySolver(annealer.BaseAnnealer):
+class MySolver(anneal.BaseAnnealer):
     """Class docstring for your solver."""
 
     def __init__(self, *args, **kwargs):
         # Initialization code for your problem.
-        # All you need to make sure is to pass an initial_state and
-        # the max_steps parameter to the statement below.
+        # All you need to make sure is to pass an initial_state and,
+        # optionally, the max_steps parameter to the statement below.
 
-        super().__init__(initial_state, max_steps)
+        super().__init__(initial_state, max_steps=1000)
 
     def _energy(self, state):
         """Returns the energy of a given state."""
