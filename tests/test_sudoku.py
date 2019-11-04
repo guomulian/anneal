@@ -104,15 +104,15 @@ def test_blockify_correct(puzzle_cols):
 
 
 def test_energy_correct(puzzle_all_zeros, puzzle_valid_solution):
-    assert SudokuSolver._energy(None, puzzle_all_zeros) == -18
-    assert SudokuSolver._energy(None, puzzle_valid_solution) == -162
+    assert SudokuSolver.energy(None, puzzle_all_zeros) == -18
+    assert SudokuSolver.energy(None, puzzle_valid_solution) == -162
 
 
 def test_neighbor_switches_two_in_same_block(solver, puzzle_valid, grid):
     random.seed(0)
     s = solver(puzzle_valid)
     state = s.initial_state
-    neighbor = s._neighbor(state)
+    neighbor = s.neighbor(state)
 
     diffs = []
 
@@ -137,7 +137,7 @@ def test_neighbor_on_already_solved(solver, puzzle_valid_solution):
     random.seed(0)
     s = solver(puzzle_valid_solution)
     state = s.initial_state
-    neighbor = s._neighbor(state)
+    neighbor = s.neighbor(state)
 
     assert state == neighbor
 

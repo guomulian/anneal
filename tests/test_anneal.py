@@ -6,19 +6,14 @@ import random
 import sys
 
 
-def test_initialized_without_abstract_methods():
-    with pytest.raises(TypeError):
-        anneal.BaseAnnealer(None, 100)
-
-
 class AnnealerWithBadMaxSteps(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=None, max_steps=-1)
 
-    def _energy(self, state):
+    def energy(self, state):
         return 0
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         return state
 
 
@@ -26,10 +21,10 @@ class AnnealerWithConstantEnergy(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=None, max_steps=100)
 
-    def _energy(self, state):
+    def energy(self, state):
         return 0
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         return state
 
 
@@ -37,10 +32,10 @@ class AnnealerWithCustomDebugMethod(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=None, max_steps=1000)
 
-    def _energy(self, state):
+    def energy(self, state):
         return 0
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         return state
 
     def debug_method(self, *args, **kwargs):
@@ -51,10 +46,10 @@ class AnnealerWithConstantSmallTemperature(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=0, max_steps=100)
 
-    def _energy(self, state):
+    def energy(self, state):
         return state
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         return state - 1
 
     def temperature(self, step):
@@ -68,28 +63,19 @@ class AnnealerMinusOne(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=0, max_steps=100)
 
-    def _energy(self, state):
+    def energy(self, state):
         return state
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         return state - 1
 
     def temperature(self, step):
         return 1e-128
 
 
-class AnnealerWithRotatingEnergy(anneal.BaseAnnealer):
-    def __init__(self):
-        super().__init__(initial_state=0, max_steps=100)
-
-    def _energy(self, state):
-        return state % 2
-
-    def _neighbor(self, state):
-        return state + 1
-
-    def temperature(self, step):
-        return 1e-128
+def test_initialized_without_abstract_methods():
+    with pytest.raises(TypeError):
+        anneal.BaseAnnealer(None, 100)
 
 
 def test_anneal_with_bad_max_steps():
@@ -131,7 +117,7 @@ def test_accept_state_overflow(capsys):
 
 def test_run():
     annealer = AnnealerWithConstantEnergy()
-    energies = annealer.run(50)
+    _, energies = annealer.run(50)
 
     assert all(e == 0 for e in energies)
 
@@ -157,13 +143,9 @@ def test_bad_energy_exit_rounds_value():
 
 
 def test_energy_queue_clears():
-    annealer = AnnealerWithRotatingEnergy()
-
-    # We use a similar strategy as in test_accept_state_overflow to ensure
-    # every state is accepted
-    annealer.anneal(energy_exit_rounds=2, energy_exit_tol=0.1, temp_tol=-1)
-    assert annealer._energy_queue == deque([0], maxlen=2)
-    annealer._energy_exit_handler(energy=1, tol=0.1)
+    annealer = AnnealerWithConstantEnergy()
+    annealer._energy_queue = deque([0], maxlen=2)
+    annealer._energy_queue_handler(energy=1, tol=0.1)
     assert annealer._energy_queue == deque([1], maxlen=2)
 
 

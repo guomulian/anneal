@@ -2,33 +2,20 @@ from examples.tsp import tsp
 import random
 import logging
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-random.seed(1)
 
-n_points = 20
-max_steps = 10000
-cities = [(random.uniform(-10, 10), random.uniform(-10, 10))
-          for _ in range(n_points)]
+np.random.seed(1)
+random.seed(0)
+
+n_points = 10
+max_steps = 5000
+cities = np.random.rand(n_points, 2)
 
 solver = tsp.TravelingSalesPerson(cities, max_steps)
-state, energy = solver.anneal(verbose=2,  energy_exit_rounds=50,
-                              energy_exit_tol=1e-6)
+_, energy = solver.anneal(verbose=2)
 
-
-def get_xy(state):
-    """Append the first city to the end and transpose so that state is in a
-    plt.plot-friendly shape.
-    """
-    state = np.array(state).T
-    state = np.column_stack((state, state[:, 0]))
-    return state
-
-
-x, y = get_xy(state)
-
-plt.plot(x, y)
-plt.show()
+print("Shortest distance found: {}".format(energy))
+solver.plot_state()

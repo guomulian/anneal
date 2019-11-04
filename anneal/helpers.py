@@ -1,3 +1,4 @@
+import copy
 import math
 import numpy as np
 import time
@@ -10,10 +11,10 @@ def clip(item, lower, upper):
 
 def distance(p1, p2):
     """Return the Euclidean distance between two points."""
-    p1 = np.array(p1)
-    p2 = np.array(p2)
+    r1 = np.array(p1, copy=True)
+    r2 = np.array(p2, copy=True)
 
-    return np.linalg.norm(p1 - p2)
+    return np.linalg.norm(r1 - r2)
 
 
 def generate_filename(obj, extension):

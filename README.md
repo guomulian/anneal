@@ -22,7 +22,7 @@ For example, if we apply [gradient descent](https://en.wikipedia.org/wiki/Gradie
 
 The **acceptance probability** of these "bad" solutions is controlled by a parameter (often referred to as the **temperature**, due to analogy with the annealing of metallurgy), which is eventually reduced to zero according to some **schedule**.
 
-For example, the schedule shown in the following image has the temperature decreasing at a rate of `0.1` per step.
+For example, the schedule shown in the following image (from Wikipedia) has the temperature decreasing at a rate of `0.1` per step.
 
 [![A simulated annealing search for a maximum on a noisy example function][wikipedia-image]](https://commons.wikimedia.org/wiki/File:Hill_Climbing_with_Simulated_Annealing.gif)
 
@@ -52,7 +52,7 @@ $ python examples/rvf2/rvf2_example.py
 
 ## Usage
 
-To use, simply import the `anneal` module and subclass `BaseAnnealer`, making sure to define `_energy` and `_neighbor` methods.
+To use, simply import the `anneal` module and subclass `BaseAnnealer`, making sure to define `energy` and `neighbor` methods.
 
 ```python
 import anneal
@@ -68,11 +68,11 @@ class MySolver(anneal.BaseAnnealer):
 
         super().__init__(initial_state, max_steps=1000)
 
-    def _energy(self, state):
+    def energy(self, state):
         """Returns the energy of a given state."""
         pass
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         """Returns a random neighbor of the given state."""
         pass
 ```
@@ -96,7 +96,7 @@ def temperature(self, step):
     # exponential scheme
     return 0.8**step
 ```
-##### `formatter(self, output)`
+##### `format_output(self, output)`
 This method is given as an option for post-processing the results of the `anneal()` method.
 
 `output` is of the form `(best_state, best_energy)`.
@@ -104,7 +104,7 @@ This method is given as an option for post-processing the results of the `anneal
 ###### Example
 ```python
 
-def formatter(self, output):
+def format_output(self, output):
     # only return the final state
     return output[0]
 ```

@@ -22,7 +22,7 @@ class Rvf1(anneal.BaseAnnealer):
 
         super().__init__(initial_state, max_steps)
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         bounds = self.bounds
 
         dx = 0.1*abs(bounds[1]-bounds[0])
@@ -37,7 +37,7 @@ class Rvf1(anneal.BaseAnnealer):
 
         return moved
 
-    def _energy(self, state):
+    def energy(self, state):
         if self.objective == 'min':
             return self.fun(state)
         elif self.objective == 'max':
@@ -45,7 +45,7 @@ class Rvf1(anneal.BaseAnnealer):
         else:
             raise ValueError('Objective should be either "min" or "max".')
 
-    def formatter(self, output):
+    def format_output(self, output):
         if self.objective == 'max':
             return output[0], -output[1]
         else:

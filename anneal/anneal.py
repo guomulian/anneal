@@ -19,12 +19,12 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         The current step the annealer is on.
     max_steps : int
         The maximum number of steps the annealer is permitted to take.
-    energy : float
-        The energy of the current state, as defined by the _energy() method.
+    _energy : float
+        The energy of the current state, as defined by the energy() method.
     initial_state : <>
         The initial state passed in. This is kept simply for the _reset()
         method.
-    state : <>
+    _state : <>
         The current state.
     best_energy : float
         The current best energy.
@@ -32,7 +32,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         The current best state. The final value of this will be the solution.
     """
 
-    def __init__(self, initial_state, max_steps=None):
+    def __init__(self, initial_state, max_steps=1000):
         """
         Parameters
         ----------
@@ -40,7 +40,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             The state the algorithm will begin with.
 
         max_steps : int, optional
-            Default is None.
+            Default is 1000.
 
             This may be changed or defined later. If left as None now,
             max_steps must be specified when calling the anneal method
@@ -48,48 +48,38 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         """
         self.step = 0
 
-        self.energy = self._energy(initial_state)
-        self.state = copy.deepcopy(initial_state)
+        self._energy = self.energy(initial_state)
+        self._state = copy.deepcopy(initial_state)
         self.initial_state = copy.deepcopy(initial_state)
 
         self.best_state = copy.deepcopy(initial_state)
-        self.best_energy = self._energy(self.best_state)
+        self.best_energy = self.energy(self.best_state)
         self.max_steps = max_steps
 
     def __str__(self):
-        pattern = "{}(\n"\
-                  "\tstep={},\n"\
-                  "\tmax_steps={},\n"\
-                  "\ttemp={},\n"\
-                  "\tenergy={},\n"\
-                  "\tbest_energy={}\n)"
+        pattern = "{}(step={}/{}: energy={})"
         return pattern.format(type(self).__name__,
                               self.step,
                               self.max_steps,
-                              self.temperature(self.step),
-                              self.energy,
-                              self.best_energy)
-
-    def _check_max_steps(self, max_steps):
-        return isinstance(max_steps, int) and max_steps > 0
+                              self._energy)
 
     def _reset(self, best_state=None):
         """Resets the state of the annealer, with the possibility of
            pre-specifying a "best state".
         """
         self.step = 0
-        self.state = copy.deepcopy(self.initial_state)
-        self.energy = self._energy(self.state)
+        self._state = copy.deepcopy(self.initial_state)
+        self._energy = self.energy(self._state)
 
         if best_state:
             self.best_state = copy.deepcopy(best_state)
         else:
-            self.best_state = copy.deepcopy(self.state)
+            self.best_state = copy.deepcopy(self._state)
 
-        self.best_energy = self._energy(self.best_state)
+        self.best_energy = self.energy(self.best_state)
 
     @abc.abstractmethod
-    def _neighbor(self, state):  # pragma: no cover
+    def neighbor(self, state):  # pragma: no cover
         """Returns a random neighbor of a given state.
 
         Parameters
@@ -100,7 +90,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _energy(self, state):  # pragma: no cover
+    def energy(self, state):  # pragma: no cover
         """Returns the energy of a given state.
 
         The annealing procedure will try to bring the system to a state that
@@ -123,21 +113,21 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         step : int
             The number of steps elapsed.
         """
-        return 1.00001 - step/self.max_steps
+        return 1 - step/self.max_steps
 
-    def _acceptance_probability(self, new_state, temp):
+    def _acceptance_probability(self, state, temp):
         """Probability of moving from the current state to the new state.
 
         As temp goes to zero, this should go to zero if E_new > E_old.
         """
-        return math.exp(-(self._energy(new_state) - self._energy(self.state))
+        return math.exp(-(self.energy(state) - self.energy(self._state))
                         / temp)
 
-    def _accept_state(self, new_state):
-        """Returns True if the new_state is accepted."""
+    def _accept_state(self, state):
+        """Returns True if the given state is accepted."""
         try:
             temp = self.temperature(self.step)
-            p = self._acceptance_probability(new_state, temp)
+            p = self._acceptance_probability(state, temp)
 
             if p >= 1 or p >= random.random():
                 return True
@@ -147,7 +137,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         except OverflowError:
             return True
 
-    def formatter(self, output):
+    def format_output(self, output):
         """Function for processing the output of anneal. May be overwritten if
         desired.
 
@@ -156,7 +146,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         Another possible use is if one wants to use BaseAnnealer to search
         for a global maximum rather than a minimum. (By default, energy will be
-        minimized; the formatter can be used to take the negative of the final
+        minimized; format_output can be used to take the negative of the final
         energy.)
 
         Parameters
@@ -166,29 +156,26 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         """
         return output
 
-    def debug_method(self, *args, **kwargs):  # pragma: no cover
-        """Defines behavior when anneal is run with debug=True. Default is to
-        print __str__(self). Note that debug_method will not be run for every
-        step unless verbose is set to 2.
+    def debug_method(self):  # pragma: no cover
+        """Defines behavior when anneal is run with debug=True. Runs at the
+        start of every step.
 
-        May be overwritten to display a visualization of the current state,
-        for example.
+        Note that debug_method will not be run for every step unless verbose
+        is set to the max (2).
         """
         print(self)
 
-    def _debug_handler(self, *args, **kwargs):
+    def _debug_handler(self, debug, verbose):
         """Takes care of debugging with different verbosity options."""
+        if debug:
+            # {verbose: # of times to call debug_method()}
+            n_intervals = {0: 10, 1: 100, 2: self.max_steps}
+            debug_interval = self.max_steps // n_intervals[verbose]
 
-        # maps verbose to number of times to execute debug_method
-        verbose = kwargs.get("verbose", 0)
+            if self.step % debug_interval == 0:
+                self.debug_method()
 
-        n_intervals = {0: 10, 1: 100, 2: self.max_steps}
-        debug_interval = self.max_steps // n_intervals[verbose]
-
-        if self.step % debug_interval == 0:
-            self.debug_method(*args, **kwargs)
-
-    def _pickle_state(self, pickle_file=None):
+    def pickle_state(self, pickle_file=None, append=False):
         """Pickles the current state to a file.
 
         Parameters
@@ -199,19 +186,24 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             File to write to. If this is not specified, a .pickle file will
             be created with the filename given by the class name and a
             timestamp.
+
+        append : boolean, optional
+            Default is False.
+
+            If True, appends to the file specified by pickle_file.
         """
         if pickle_file is None:
             pickle_file = helpers.generate_filename(self, ".pickle")
 
-        if self.step == 0:
-            mode = 'wb'
-        else:
+        if append:
             mode = 'ab'
+        else:
+            mode = 'wb'
 
         self.__last_pickle = pickle_file
 
         with open(pickle_file, mode) as file:
-            pickle.dump(self.state, file)
+            pickle.dump(self._state, file)
 
     def unpickle_states(self, filename=None):
         """Returns a list of states found in a given pickle file. If no
@@ -238,7 +230,12 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         return states
 
-    def _energy_exit_handler(self, energy, tol):
+    def _pickle_handler(self, pickle, pickle_file):
+        if pickle:
+            append = (self.step > 0)
+            self.pickle_state(pickle_file, append)
+
+    def _energy_queue_handler(self, energy, tol):
         """Tests if given energy should be added to the queue (in other words,
         is within the given tolerance. If it's not, resets the queue.
         ."""
@@ -250,6 +247,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                 self._energy_queue.append(energy)
 
         except AttributeError:
+            # don't do anything if _energy_queue is not defined
             pass
 
     def _energy_break(self, energy_exit_rounds):
@@ -264,13 +262,17 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         else:
             return False
 
-    def _temp_break(self, temp_tol):
+    def _temp_break(self, tol):
         """Tests whether conditions for a temperature break are met."""
-        return self.temperature(self.step) < temp_tol
+        return abs(self.temperature(self.step - 1) -
+                   self.temperature(self.step)) < tol
+
+    def _is_valid_max_steps(self, max_steps):
+        return isinstance(max_steps, int) and max_steps > 0
 
     def anneal(self, *args, **kwargs):
         """Tries to find the state which minimizes the energy given by the
-        _energy method via simulated annealing.
+        energy() method via simulated annealing.
 
         Parameters
         ----------
@@ -333,9 +335,10 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             Tolerance for energy_exit_rounds.
 
         temp_tol : float, optional
-            Default is 0.0001.
+            Default is -1.
 
-            The minimum allowed temperature before the program aborts.
+            If the change in temperature becomes smaller than this, the program
+            will abort.
 
         Returns
         -------
@@ -350,11 +353,11 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         pickle_file = kwargs.get("pickle_file", None)
         energy_exit_rounds = kwargs.get("energy_exit_rounds", -1)
         energy_exit_tol = kwargs.get("energy_exit_tol", -1)
-        temp_tol = kwargs.get("temp_tol", 0.0001)
+        temp_tol = kwargs.get("temp_tol", -1)
 
-        if self._check_max_steps(max_steps):
+        if self._is_valid_max_steps(max_steps):
             self.max_steps = max_steps
-        elif self._check_max_steps(self.max_steps):
+        elif self._is_valid_max_steps(self.max_steps):
             pass
         else:
             raise ValueError("max_steps must be a positive integer.")
@@ -366,37 +369,31 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             raise TypeError("energy_exit_rounds must be an int.")
 
         if energy_exit_rounds > 1 and energy_exit_tol > 0:
-            self._energy_queue = deque([self.energy],
+            self._energy_queue = deque([self._energy],
                                        maxlen=energy_exit_rounds)
 
         self._reset(best_state=best_state)
 
         for _ in range(self.max_steps):
-            if debug:
-                self._debug_handler(verbose, *args, **kwargs)
+            self._debug_handler(debug, verbose)
 
-            neighbor = self._neighbor(copy.deepcopy(self.state))
+            neighbor = self.neighbor(copy.deepcopy(self._state))
 
             if self._accept_state(neighbor):
-                new_energy = self._energy(neighbor)
+                new_energy = self.energy(neighbor)
 
-                if new_energy < self.energy:
-                    self.energy = new_energy
+                if new_energy < self._energy:
+                    self._energy = new_energy
 
-                    # Don't overwrite if already found (best_energy may be
-                    # specified as a parameter)
-                    if self.energy < self.best_energy:
+                    if self._energy < self.best_energy:
                         self.best_state = copy.deepcopy(neighbor)
                         self.best_energy = new_energy
 
-                self.state = copy.deepcopy(neighbor)
+                self._state = copy.deepcopy(neighbor)
 
-                self._energy_exit_handler(new_energy, energy_exit_tol)
+                self._pickle_handler(pickle, pickle_file)
 
-                if pickle:
-                    self._pickle_state(pickle_file)
-
-                # Test for energy break
+                self._energy_queue_handler(self._energy, energy_exit_tol)
                 if self._energy_break(energy_exit_rounds):
                     if verbose != 0:
                         logging.info("Finished - Energy within tolerance for "
@@ -405,7 +402,6 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                                              energy_exit_tol))
                     break
 
-            # Test for temperature break
             if self._temp_break(temp_tol):
                 if verbose != 0:
                     logging.info("Finished - Reached temperature tolerance "
@@ -419,25 +415,26 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                 logging.info("Finished - Reached max steps "
                              "(max_steps = {}).".format(self.max_steps))
 
-        # if there was a break, pickle last state
-        if pickle:
-            self._pickle_state(pickle_file)
+        # If there was a break, pickle last state
+        self._pickle_handler(pickle, pickle_file)
 
-        return self.formatter((self.best_state, self.best_energy))
+        return self.format_output((self.best_state, self.best_energy))
 
     def run(self, n_runs, *args, **kwargs):
-        """Run anneal multiple times. *args and **kwargs will be passed to the
-        anneal call.
+        """Run anneal method multiple times with a given set of parameters.
+        (*args and **kwargs will be passed to anneal.)
 
         Parameters
         ----------
         n_runs : int
             Number of times to run anneal.
         """
+        states = []
         energies = []
 
         for _ in range(n_runs):
-            _, e = self.anneal(*args, **kwargs)
+            s, e = self.anneal(*args, **kwargs)
+            states.append(s)
             energies.append(e)
 
-        return energies
+        return states, energies

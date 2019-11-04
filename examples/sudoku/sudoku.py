@@ -89,7 +89,7 @@ class SudokuSolver(anneal.BaseAnnealer):
         """Returns a list of the 3x3 blocks."""
         return [SudokuSolver.block(b, board) for b in range(9)]
 
-    def _neighbor(self, state):
+    def neighbor(self, state):
         """Returns a randomly selected "neighboring" board.
 
         First, we pick a random 3x3 block. Then, we randomly pick two "unknown"
@@ -125,7 +125,7 @@ class SudokuSolver(anneal.BaseAnnealer):
 
         return neighbor
 
-    def _energy(self, state):
+    def energy(self, state):
         """Adds -1 to the energy/score for every unique value in each
         row/column.
 

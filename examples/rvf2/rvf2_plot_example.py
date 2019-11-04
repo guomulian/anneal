@@ -49,7 +49,7 @@ if __name__ == '__main__':
     yp = np.array([s[1] for s in intermediate_states])
     zp = fun(xp, yp)
     sp = np.array(range(len(intermediate_states)))
-    ep = np.array(list(map(solver._energy, intermediate_states)))
+    ep = np.array(list(map(solver.energy, intermediate_states)))
     tp = np.array(list(map(solver.temperature, sp)))
 
     steps = 100
