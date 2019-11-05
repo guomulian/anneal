@@ -15,7 +15,7 @@ class TravelingSalesPerson(anneal.BaseAnnealer):
         np.random.shuffle(initial_state)
         super().__init__(initial_state, max_steps)
 
-    def energy(self, state):
+    def energy_method(self, state):
         """Returns the total distance of the (closed) route given by state."""
         total_distance = 0
         n = len(state)
@@ -67,12 +67,12 @@ class TravelingSalesPerson(anneal.BaseAnnealer):
                                "cities is {}.)".format(n_cities))
 
         best_state = np.copy(cities)
-        best_energy = self.energy(cities)
+        best_energy = self.energy_method(cities)
 
         possible_solutions = permutations(cities)
 
         for solution in possible_solutions:
-            energy = self.energy(solution)
+            energy = self.energy_method(solution)
             if energy < best_energy:
                 best_state = np.copy(solution)
                 best_energy = energy

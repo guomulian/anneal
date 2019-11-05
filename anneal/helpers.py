@@ -2,6 +2,7 @@ import copy
 import math
 import numpy as np
 import time
+import timeit
 
 
 def clip(item, lower, upper):
@@ -24,3 +25,14 @@ def generate_filename(obj, extension):
     timestamp = time.strftime("-%Y%m%d-%H%M%S")
     filename = obj.__class__.__name__ + timestamp + extension
     return filename
+
+
+def timed(function):
+    def timed_function(*args, **kwargs):
+        start = timeit.default_timer()
+        result = function(*args, **kwargs)
+        end = timeit.default_timer()
+        print("Execution of {} took {} seconds"
+              .format(function.__name__, end - start))
+        return result
+    return timed_function

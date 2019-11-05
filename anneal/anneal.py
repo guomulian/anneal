@@ -9,30 +9,9 @@ from anneal import helpers
 
 
 class BaseAnnealer(metaclass=abc.ABCMeta):
-    """Template method pattern for perfoming simulated annealing.
+    """Template method pattern for perfoming simulated annealing."""
 
-    ...
-
-    Attributes
-    ----------
-    step : int
-        The current step the annealer is on.
-    max_steps : int
-        The maximum number of steps the annealer is permitted to take.
-    _energy : float
-        The energy of the current state, as defined by the energy() method.
-    initial_state : <>
-        The initial state passed in. This is kept simply for the _reset()
-        method.
-    _state : <>
-        The current state.
-    best_energy : float
-        The current best energy.
-    best_state : <>
-        The current best state. The final value of this will be the solution.
-    """
-
-    def __init__(self, initial_state, max_steps=1000):
+    def __init__(self, initial_state, max_steps=None, *args, **kwargs):
         """
         Parameters
         ----------
@@ -46,37 +25,125 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             max_steps must be specified when calling the anneal method
             for the first time.
         """
-        self.step = 0
+        self._initial_state = self.copy_method(initial_state)
 
-        self._energy = self.energy(initial_state)
-        self._state = copy.deepcopy(initial_state)
-        self.initial_state = copy.deepcopy(initial_state)
+        if max_steps is not None:
+            self.max_steps = max_steps
+        else:
+            self.max_steps = self.defaults["max_steps"]
 
-        self.best_state = copy.deepcopy(initial_state)
-        self.best_energy = self.energy(self.best_state)
-        self.max_steps = max_steps
+        self._reset(*args, **kwargs)
 
     def __str__(self):
-        pattern = "{}(step={}/{}: energy={})"
-        return pattern.format(type(self).__name__,
-                              self.step,
-                              self.max_steps,
-                              self._energy)
+        return "{}(step={}/{}: energy={})".format(type(self).__name__,
+                                                  self.step,
+                                                  self.max_steps,
+                                                  self.energy)
 
-    def _reset(self, best_state=None):
-        """Resets the state of the annealer, with the possibility of
-           pre-specifying a "best state".
+    @property
+    def defaults(self):
+        """Default values for various parameters."""
+        return dict(max_steps=1000,
+                    energy_break_rounds=-1,
+                    energy_break_tol=-1,
+                    temp_tol=-1,
+                    verbose=0,
+                    debug=False,
+                    pickle=False,
+                    pickle_file=None)
+
+    @property
+    def step(self):
+        """The current step the anneal() method is on."""
+        return self._step
+
+    @property
+    def max_steps(self):
+        """The maximum number of steps anneal() is allowed to take."""
+        return self._max_steps
+
+    @property
+    def energy(self):
+        """The energy of the current state."""
+        return self.energy_method(self.state)
+
+    @property
+    def state(self):
+        """The current state."""
+        return self._state
+
+    @property
+    def initial_state(self):
+        """The state the annealer object was initialized with."""
+        return self._initial_state
+
+    @property
+    def best_state(self):
+        return self._best_state
+
+    @property
+    def best_energy(self):
+        """The energy of best_state."""
+        return self.energy_method(self.best_state)
+
+    @property
+    def energy_queue(self):
+        """Queue to keep track of energies for an energy break.
+
+        (Keeping this readable for debugging purposes.)
         """
-        self.step = 0
-        self._state = copy.deepcopy(self.initial_state)
-        self._energy = self.energy(self._state)
+        return self.__energy_queue
+
+    @max_steps.setter
+    def max_steps(self, value):
+        if isinstance(value, int) and value > 0:
+            self._max_steps = value
+        else:
+            raise ValueError("Max steps must be a positive integer.")
+
+    def copy_method(self, state):
+        """Method for copying states; may be overwritten. Default is
+        copy.deepcopy().
+        """
+        return copy.deepcopy(state)
+
+    def _reset(self, *args, **kwargs):
+        """Resets the state of the annealer with the given options."""
+
+        self._step = 0
+        self._state = self.copy_method(self.initial_state)
+
+        self.max_steps = kwargs.get("max_steps", self.max_steps)
+
+        self.__verbose = kwargs.get("verbose", 0)
+        assert self.__verbose in [0, 1, 2], "verbose must be in [0, 1, 2]."
+
+        self.__debug = kwargs.get(
+                "debug", self.defaults["debug"])
+        self.__pickle = kwargs.get(
+                "pickle", self.defaults["pickle"])
+        self.__pickle_file = kwargs.get(
+                "pickle_file", self.defaults["pickle_file"])
+        self.__energy_break_rounds = kwargs.get(
+                "energy_break_rounds", self.defaults["energy_break_rounds"])
+        self.__energy_break_tol = kwargs.get(
+                "energy_break_tol", self.defaults["energy_break_tol"])
+        self.__temp_tol = kwargs.get(
+                "temp_tol", self.defaults["temp_tol"])
+        self.__last_pickle = None
+
+        best_state = kwargs.get("best_state", None)
 
         if best_state:
-            self.best_state = copy.deepcopy(best_state)
+            self._best_state = self.copy_method(best_state)
         else:
-            self.best_state = copy.deepcopy(self._state)
+            self._best_state = self.copy_method(self._state)
 
-        self.best_energy = self.energy(self.best_state)
+        if self.__energy_break_rounds > 1 and self.__energy_break_tol > 0:
+            self.__energy_queue = deque([self.energy],
+                                        maxlen=self.__energy_break_rounds)
+        else:
+            self.__energy_queue = None
 
     @abc.abstractmethod
     def neighbor(self, state):  # pragma: no cover
@@ -90,7 +157,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def energy(self, state):  # pragma: no cover
+    def energy_method(self, state):  # pragma: no cover
         """Returns the energy of a given state.
 
         The annealing procedure will try to bring the system to a state that
@@ -120,7 +187,8 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         As temp goes to zero, this should go to zero if E_new > E_old.
         """
-        return math.exp(-(self.energy(state) - self.energy(self._state))
+        return math.exp(-(self.energy_method(state) -
+                          self.energy_method(self.state))
                         / temp)
 
     def _accept_state(self, state):
@@ -165,12 +233,14 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         """
         print(self)
 
-    def _debug_handler(self, debug, verbose):
+    def _handle_debug(self):
         """Takes care of debugging with different verbosity options."""
-        if debug:
+        if self.__debug:
             # {verbose: # of times to call debug_method()}
-            n_intervals = {0: 10, 1: 100, 2: self.max_steps}
-            debug_interval = self.max_steps // n_intervals[verbose]
+            n_intervals = {0: 10,
+                           1: 100,
+                           2: self.max_steps}
+            debug_interval = self.max_steps // n_intervals[self.__verbose]
 
             if self.step % debug_interval == 0:
                 self.debug_method()
@@ -190,7 +260,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         append : boolean, optional
             Default is False.
 
-            If True, appends to the file specified by pickle_file.
+            If True, opens pickle_file in append mode.
         """
         if pickle_file is None:
             pickle_file = helpers.generate_filename(self, ".pickle")
@@ -203,7 +273,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         self.__last_pickle = pickle_file
 
         with open(pickle_file, mode) as file:
-            pickle.dump(self._state, file)
+            pickle.dump(self.state, file)
 
     def unpickle_states(self, filename=None):
         """Returns a list of states found in a given pickle file. If no
@@ -211,13 +281,13 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         latest file pickled by anneal.
         """
         if not filename:
-            try:
+            if self.__last_pickle is not None:
                 filename = self.__last_pickle
-            except AttributeError as error:
+            else:
                 raise FileNotFoundError(
                     "Could not find anything to unpickle. Try first running "
                     "anneal() with pickle=True, or run unpickle_states() with "
-                    "a filename specified.") from None
+                    "a filename specified.")
 
         states = []
 
@@ -230,55 +300,56 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         return states
 
-    def _pickle_handler(self, pickle, pickle_file):
-        if pickle:
-            append = (self.step > 0)
-            self.pickle_state(pickle_file, append)
-
-    def _energy_queue_handler(self, energy, tol):
-        """Tests if given energy should be added to the queue (in other words,
-        is within the given tolerance. If it's not, resets the queue.
-        ."""
-        try:
-            if abs(self._energy_queue[-1] - energy) < tol:
-                self._energy_queue.append(energy)
-            else:
-                self._energy_queue.clear()
-                self._energy_queue.append(energy)
-
-        except AttributeError:
-            # don't do anything if _energy_queue is not defined
-            pass
-
-    def _energy_break(self, energy_exit_rounds):
+    def _energy_break(self):
         """Tests whether conditions for an energy break are met."""
-        try:
-            self._energy_queue
-        except AttributeError:
+        if self.__energy_queue is None:
             return False
-
-        if len(self._energy_queue) == energy_exit_rounds:
+        elif len(self.__energy_queue) == self.__energy_break_rounds:
             return True
         else:
             return False
 
-    def _temp_break(self, tol):
+    def _temp_break(self):
         """Tests whether conditions for a temperature break are met."""
         return abs(self.temperature(self.step - 1) -
-                   self.temperature(self.step)) < tol
+                   self.temperature(self.step)) < self.__temp_tol
 
-    def _is_valid_max_steps(self, max_steps):
-        return isinstance(max_steps, int) and max_steps > 0
+    def _handle_pickle(self, append=False):
+        if self.__pickle:
+            self.pickle_state(self.__pickle_file, append)
+
+    def _handle_energy_queue(self, energy):
+        """Tests if given energy should be added to the queue (in other words,
+        is within the given tolerance. If it's not, resets the queue.
+        ."""
+        if self.__energy_queue is not None:
+            if abs(self.__energy_queue[-1] - energy) < self.__energy_break_tol:
+                self.__energy_queue.append(energy)
+            else:
+                self.__energy_queue.clear()
+                self.__energy_queue.append(energy)
+
+    def _handle_exit(self, exit):
+        if self.__verbose != 0:
+            messages = {
+                "energy": "Energy within tolerance for {} rounds (tol = {})."
+                          .format(self.__energy_break_rounds,
+                                  self.__energy_break_tol),
+                "temp": "Reached temperature tolerance (tol = {})."
+                        .format(self.__temp_tol),
+                "max_steps": "Reached max steps (max_steps = {})."
+                             .format(self.max_steps)
+                }
+
+            logging.info("Finished - " + messages[exit])
 
     def anneal(self, *args, **kwargs):
-        """Tries to find the state which minimizes the energy given by the
-        energy() method via simulated annealing.
+        """Tries to find the state which minimizes the energy given by
+        energy_method via simulated annealing.
 
         Parameters
         ----------
         max_steps : int, optional
-            Default is None
-
             For if you want to run anneal with a different max_steps than
             originally specified.
 
@@ -317,22 +388,22 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             a timestamp will be used as the filename with the class name
             as a prefix.
 
-        energy_exit_rounds : int, optional
+        energy_break_rounds : int, optional
             Default is -1.
 
             Number of rounds of "slowly changing energy" to allow before
             exiting. Must be at least 2. If left at the default value, the
             algorithm won't terminate in this manner.
 
-            If the change in energy remains within some tolerance (specified
-            with energy_exit_tol) for energy_exit_rounds rounds, the algorithm
-            will abort early and return the best state and energy found up to
-            that point.
+            In other words, if the change in energy remains within some
+            tolerance (specified by energy_break_tol) for energy_break_rounds
+            rounds, the algorithm will abort early and return the best state
+            and energy found up to that point.
 
-        energy_exit_tol : float, optional
+        energy_break_tol : float, optional
             Default is -1.
 
-            Tolerance for energy_exit_rounds.
+            Tolerance for energy_break_rounds.
 
         temp_tol : float, optional
             Default is -1.
@@ -345,78 +416,39 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         (<>, float)
             This is (best_state, best_energy).
         """
-        max_steps = kwargs.get("max_steps", None)
-        best_state = kwargs.get("best_state", None)
-        verbose = kwargs.get("verbose", 0)
-        debug = kwargs.get("debug", False)
-        pickle = kwargs.get("pickle", False)
-        pickle_file = kwargs.get("pickle_file", None)
-        energy_exit_rounds = kwargs.get("energy_exit_rounds", -1)
-        energy_exit_tol = kwargs.get("energy_exit_tol", -1)
-        temp_tol = kwargs.get("temp_tol", -1)
+        self._reset(*args, **kwargs)
 
-        if self._is_valid_max_steps(max_steps):
-            self.max_steps = max_steps
-        elif self._is_valid_max_steps(self.max_steps):
-            pass
-        else:
-            raise ValueError("max_steps must be a positive integer.")
-
-        if verbose not in [0, 1, 2]:
-            raise ValueError("verbose must be one of 0, 1, or 2.")
-
-        if not isinstance(energy_exit_rounds, int):
-            raise TypeError("energy_exit_rounds must be an int.")
-
-        if energy_exit_rounds > 1 and energy_exit_tol > 0:
-            self._energy_queue = deque([self._energy],
-                                       maxlen=energy_exit_rounds)
-
-        self._reset(best_state=best_state)
+        # pickle first state
+        self._handle_pickle(append=False)
 
         for _ in range(self.max_steps):
-            self._debug_handler(debug, verbose)
+            self._handle_debug()
 
-            neighbor = self.neighbor(copy.deepcopy(self._state))
+            neighbor = self.neighbor(self.copy_method(self.state))
 
             if self._accept_state(neighbor):
-                new_energy = self.energy(neighbor)
+                new_energy = self.energy_method(neighbor)
 
-                if new_energy < self._energy:
-                    self._energy = new_energy
+                if new_energy < self.best_energy:
+                    self._best_state = self.copy_method(neighbor)
 
-                    if self._energy < self.best_energy:
-                        self.best_state = copy.deepcopy(neighbor)
-                        self.best_energy = new_energy
+                self._state = self.copy_method(neighbor)
 
-                self._state = copy.deepcopy(neighbor)
+                self._handle_pickle(append=True)
+                self._handle_energy_queue(new_energy)
 
-                self._pickle_handler(pickle, pickle_file)
-
-                self._energy_queue_handler(self._energy, energy_exit_tol)
-                if self._energy_break(energy_exit_rounds):
-                    if verbose != 0:
-                        logging.info("Finished - Energy within tolerance for "
-                                     "{} rounds (tol = {})."
-                                     .format(energy_exit_rounds,
-                                             energy_exit_tol))
+                if self._energy_break():
+                    self._handle_exit("energy")
                     break
 
-            if self._temp_break(temp_tol):
-                if verbose != 0:
-                    logging.info("Finished - Reached temperature tolerance "
-                                 "(tol = {}).".format(temp_tol))
+            if self._temp_break():
+                self._handle_exit("temp")
                 break
 
-            self.step += 1
+            self._step += 1
 
         else:
-            if verbose != 0:
-                logging.info("Finished - Reached max steps "
-                             "(max_steps = {}).".format(self.max_steps))
-
-        # If there was a break, pickle last state
-        self._pickle_handler(pickle, pickle_file)
+            self._handle_exit("max_steps")
 
         return self.format_output((self.best_state, self.best_energy))
 

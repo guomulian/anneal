@@ -10,7 +10,7 @@ class AnnealerWithBadMaxSteps(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=None, max_steps=-1)
 
-    def energy(self, state):
+    def energy_method(self, state):
         return 0
 
     def neighbor(self, state):
@@ -21,7 +21,7 @@ class AnnealerWithConstantEnergy(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=None, max_steps=100)
 
-    def energy(self, state):
+    def energy_method(self, state):
         return 0
 
     def neighbor(self, state):
@@ -32,7 +32,7 @@ class AnnealerWithCustomDebugMethod(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=None, max_steps=1000)
 
-    def energy(self, state):
+    def energy_method(self, state):
         return 0
 
     def neighbor(self, state):
@@ -46,7 +46,7 @@ class AnnealerWithConstantSmallTemperature(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=0, max_steps=100)
 
-    def energy(self, state):
+    def energy_method(self, state):
         return state
 
     def neighbor(self, state):
@@ -63,7 +63,7 @@ class AnnealerMinusOne(anneal.BaseAnnealer):
     def __init__(self):
         super().__init__(initial_state=0, max_steps=100)
 
-    def energy(self, state):
+    def energy_method(self, state):
         return state
 
     def neighbor(self, state):
@@ -85,8 +85,10 @@ def test_anneal_with_bad_max_steps():
 
 
 def test_anneal_with_max_step_change():
-    annealer = AnnealerWithBadMaxSteps()
+    annealer = AnnealerWithConstantEnergy()
     annealer.anneal(max_steps=50)
+
+    assert annealer.step == 50
 
 
 def test_anneal_unpickle_states_without_file():
@@ -131,25 +133,28 @@ def test_run_parameter_change():
 def test_bad_verbose_value():
     annealer = AnnealerWithConstantEnergy()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(Exception):
         annealer.anneal(verbose=5)
 
 
-def test_bad_energy_exit_rounds_value():
+def test_bad_energy_break_rounds_value():
     annealer = AnnealerWithConstantEnergy()
+    tol = 0.1
 
     with pytest.raises(TypeError):
-        annealer.anneal(energy_exit_rounds=0.2)
+        annealer.anneal(energy_break_rounds=5.2, energy_break_tol=tol)
+
+    annealer.anneal(energy_break_rounds=0.2, energy_break_tol=tol)
+    assert annealer.energy_queue is None
 
 
 def test_energy_queue_clears():
-    annealer = AnnealerWithConstantEnergy()
-    annealer._energy_queue = deque([0], maxlen=2)
-    annealer._energy_queue_handler(energy=1, tol=0.1)
-    assert annealer._energy_queue == deque([1], maxlen=2)
+    annealer = AnnealerMinusOne()
+    annealer.anneal(energy_break_rounds=2, energy_break_tol=0.2)
+    assert len(annealer.energy_queue) == 1
 
 
-def test_debug_handler(capsys):
+def test_handle_debug(capsys):
     annealer = AnnealerWithCustomDebugMethod()
     custom_string = "This is a custom debug method.\n"
 
@@ -203,15 +208,15 @@ def test_verbose_temp_break(caplog):
 def test_verbose_energy_break(caplog):
     annealer = AnnealerWithConstantEnergy()
     temp_tol = -1
-    energy_exit_rounds = 3
-    energy_exit_tol = 0.1
+    energy_break_rounds = 3
+    energy_break_tol = 0.1
 
     with caplog.at_level(logging.INFO):
-        annealer.anneal(verbose=1, energy_exit_rounds=energy_exit_rounds,
-                        energy_exit_tol=energy_exit_tol, temp_tol=temp_tol)
+        annealer.anneal(verbose=1, energy_break_rounds=energy_break_rounds,
+                        energy_break_tol=energy_break_tol, temp_tol=temp_tol)
         expected_end = "Finished - Energy within tolerance for {} rounds "\
-                       "(tol = {}).\n".format(energy_exit_rounds,
-                                              energy_exit_tol)
+                       "(tol = {}).\n".format(energy_break_rounds,
+                                              energy_break_tol)
 
         assert caplog.text.endswith(expected_end)
 

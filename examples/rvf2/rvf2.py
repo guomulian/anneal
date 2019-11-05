@@ -40,7 +40,7 @@ class Rvf2(anneal.BaseAnnealer):
 
         return (x, y)
 
-    def energy(self, state):
+    def energy_method(self, state):
         if self.objective == 'min':
             return self.fun(*state)
         elif self.objective == 'max':

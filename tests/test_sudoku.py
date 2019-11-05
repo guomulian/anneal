@@ -104,8 +104,8 @@ def test_blockify_correct(puzzle_cols):
 
 
 def test_energy_correct(puzzle_all_zeros, puzzle_valid_solution):
-    assert SudokuSolver.energy(None, puzzle_all_zeros) == -18
-    assert SudokuSolver.energy(None, puzzle_valid_solution) == -162
+    assert SudokuSolver.energy_method(None, puzzle_all_zeros) == -18
+    assert SudokuSolver.energy_method(None, puzzle_valid_solution) == -162
 
 
 def test_neighbor_switches_two_in_same_block(solver, puzzle_valid, grid):
@@ -142,16 +142,14 @@ def test_neighbor_on_already_solved(solver, puzzle_valid_solution):
     assert state == neighbor
 
 
-def test_energy_exit_on_solved_puzzle(tmpdir, solver, puzzle_valid_solution):
-    file = tmpdir.join(helpers.generate_filename(SudokuSolver, ".pickle"))
-
+def test_energy_break_on_solved_puzzle(tmpdir, solver, puzzle_valid_solution):
     random.seed(0)
-
+    file = tmpdir.join(helpers.generate_filename(SudokuSolver, ".pickle"))
     rounds = 3
 
     s = solver(puzzle_valid_solution)
-    s.anneal(pickle=True, pickle_file=file, energy_exit_rounds=rounds,
-             energy_exit_tol=0.05)
+    s.anneal(pickle=True, pickle_file=file, energy_break_rounds=rounds,
+             energy_break_tol=0.05)
 
     states = s.unpickle_states()
 

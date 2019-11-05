@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     print("\nSOLUTION:")
     solver.pretty_print(solver.state)
-    print("Final Energy: {}".format(solver.energy))
+    print("Final Energy: {}".format(solver.energy_method))
 
     if solver.state == solution:
         print("Solved correctly!")

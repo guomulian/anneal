@@ -15,15 +15,18 @@ def test_initialized_with_bad_bounds():
 
 def test_initialized_with_bad_function():
     with pytest.raises(TypeError):
-        Rvf2(None, (0, 0), 1000, [[-1, 1], [-1, 1]])
+        solver = Rvf2(None, (0, 0), 1000, [[-1, 1], [-1, 1]])
+        solver.anneal()
 
     with pytest.raises(TypeError):
-        Rvf2('Not a function', (0, 0), 1000, [[-1, 1], [-1, 1]])
+        solver = Rvf2('Not a function', (0, 0), 1000, [[-1, 1], [-1, 1]])
+        solver.anneal()
 
 
 def test_initialized_with_bad_objective():
     with pytest.raises(ValueError):
-        Rvf2(None, (0, 0), 1000, [[-1, 1], [-1, 1]], 'blah')
+        solver = Rvf2(None, (0, 0), 1000, [[-1, 1], [-1, 1]], 'blah')
+        solver.anneal()
 
 
 def test_initialized_with_initial_point_out_of_bounds():

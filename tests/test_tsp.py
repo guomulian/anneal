@@ -47,10 +47,10 @@ def test_neighbor_reverse_across_end():
     assert (before_subroute == after_subroute[::-1]).all()
 
 
-def test_energy():
+def test_energy_method():
     n_points = 5
     cities = [(i, 0) for i in range(n_points)]
-    assert TravelingSalesPerson.energy(None, cities) == 8
+    assert TravelingSalesPerson.energy_method(None, cities) == 8
 
 
 def test_invalid_cities():
@@ -58,12 +58,12 @@ def test_invalid_cities():
         solver = TravelingSalesPerson([], max_steps=100)
 
 
-def test_small_cities(five_cities):
-    n_runs = 100
+def test_small_cities_compared_to_brute_force(five_cities):
+    n_runs = 20
     _, energies = five_cities.run(n_runs=n_runs,
-                                  max_steps=10000,
-                                  energy_exit_rounds=10,
-                                  energy_exit_tol=1e-7)
+                                  max_steps=2000,
+                                  energy_break_rounds=10,
+                                  energy_break_tol=1e-7)
     _, bf_energy = five_cities.brute_force()
 
     n_good = sum(abs(e - bf_energy)/bf_energy < 1e-2 for e in energies)

@@ -68,7 +68,7 @@ class MySolver(anneal.BaseAnnealer):
 
         super().__init__(initial_state, max_steps=1000)
 
-    def energy(self, state):
+    def energy_method(self, state):
         """Returns the energy of a given state."""
         pass
 

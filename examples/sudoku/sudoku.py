@@ -125,7 +125,7 @@ class SudokuSolver(anneal.BaseAnnealer):
 
         return neighbor
 
-    def energy(self, state):
+    def energy_method(self, state):
         """Adds -1 to the energy/score for every unique value in each
         row/column.
 
