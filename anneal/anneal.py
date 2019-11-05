@@ -21,9 +21,8 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         max_steps : int, optional
             Default is 1000.
 
-            This may be changed or defined later. If left as None now,
-            max_steps must be specified when calling the anneal method
-            for the first time.
+            The maximum steps the algorithm is allowed to take. May be changed
+            later.
         """
         self._initial_state = self.copy_method(initial_state)
 
@@ -79,6 +78,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
     @property
     def best_state(self):
+        """The state with the lowest known energy."""
         return self._best_state
 
     @property
@@ -102,8 +102,10 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             raise ValueError("Max steps must be a positive integer.")
 
     def copy_method(self, state):
-        """Method for copying states; may be overwritten. Default is
-        copy.deepcopy().
+        """Method for copying states; this may be overwritten.
+
+        Default is copy.deepcopy(). This may not be the most efficient option
+        for certain problems.
         """
         return copy.deepcopy(state)
 
@@ -185,7 +187,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
     def _acceptance_probability(self, state, temp):
         """Probability of moving from the current state to the new state.
 
-        As temp goes to zero, this should go to zero if E_new > E_old.
+        As temp goes to zero, this should go to zero for E_new > E_old.
         """
         return math.exp(-(self.energy_method(state) -
                           self.energy_method(self.state))
@@ -204,6 +206,9 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
 
         except OverflowError:
             return True
+
+        except ZeroDivisionError:
+            return self.energy_method(state) < self.energy_method(self.state)
 
     def format_output(self, output):
         """Function for processing the output of anneal. May be overwritten if
@@ -257,7 +262,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
             be created with the filename given by the class name and a
             timestamp.
 
-        append : boolean, optional
+        append : bool, optional
             Default is False.
 
             If True, opens pickle_file in append mode.
