@@ -1,4 +1,4 @@
-from examples.rvf2 import rvf2
+import rvf2
 import random
 
 

@@ -19,3 +19,6 @@ ENV/
 .coverage
 .pytest-cache/
 htmlcov/
+
+# Other
+TODO.md

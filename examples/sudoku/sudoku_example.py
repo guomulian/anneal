@@ -1,5 +1,6 @@
-from examples.sudoku import sudoku
+import sudoku
 import random
+
 
 if __name__ == '__main__':
     random.seed(0)

@@ -1,4 +1,4 @@
-from examples.tsp import tsp
+import tsp
 import random
 import logging
 import numpy as np
