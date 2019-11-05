@@ -32,8 +32,7 @@ The [Wikipedia article for simulated annealing](https://en.wikipedia.org/wiki/Si
 ### Examples
 Included are implementations of a few example use cases. (Unchecked items are not yet complete.)
 
-- [x] [Real-valued function of one real variable](./examples/rvf1/)
-- [x] [Real-valued function of two real variables](./examples/rvf2/)
+- [x] [Real-valued function of several real variables](./examples/rvf/)
 - [x] [Sudoku](./examples/sudoku/)
 - [x] [Traveling salesperson](./examples/tsp/)
 - [ ] Automatic map label placement

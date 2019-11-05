@@ -33,8 +33,8 @@ if __name__ == '__main__':
     solver.anneal()
 
     print("\nSOLUTION:")
-    solver.pretty_print(solver.state)
-    print("Final Energy: {}".format(solver.energy_method))
+    solver.pretty_print(solver.best_state)
+    print("Final Energy: {}".format(solver.best_energy))
 
     if solver.state == solution:
         print("Solved correctly!")
