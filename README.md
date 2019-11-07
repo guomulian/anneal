@@ -46,7 +46,7 @@ $ cd anneal
 # create/activate virtual environment
 $ pip install -r requirements.txt
 $ pip install [-e] .
-$ python examples/rvf2/rvf2_example.py
+$ python examples/rvf/rvf_example.py
 ```
 
 ## Usage
@@ -84,9 +84,8 @@ solver = MySolver(initial_state)
 best_state, best_energy = solver.anneal(max_steps=2000)
 ```
 
-That's all there is to it!
-
 #### Optional Methods
+
 ##### `temperature(self, step)`
 The `temperature` method, which provides the annealing schedule, may also be overwritten if desired. The default is for the temperature to decrease at a constant rate from `1` towards `0`, where the rate is `-1/max_steps`.
 

@@ -9,4 +9,4 @@ omit =
     venv/*
     *.egg-info/*
     setup.py
-    *_example.py
+    *_example*.py
