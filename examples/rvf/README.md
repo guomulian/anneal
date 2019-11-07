@@ -51,7 +51,7 @@ def f_1(x):
     return x**2 + np.exp(-1/(100*(x - 1))**2) - 1
 ```
 
-![Plot of example function for solver_1](solver_1.png)
+![Plot of example function for solver_1](example_1.png)
 
 ### Example 2
 This function has a minimum of `-1` at `(x, y) = (-π/2, 0)` on `[[-2, 2], [-2, 2]]`.
@@ -59,7 +59,7 @@ This function has a minimum of `-1` at `(x, y) = (-π/2, 0)` on `[[-2, 2], [-2, 
 def f_2(x, y):
     return np.sin(x) + y**2
 ```
-![Plot of example function for solver_2](solver_2.png)
+![Plot of example function for solver_2](example_2.png)
 
 ### Example 3
 This function has a minimum of `-4` at `(x, y, z) = (-2, 0, -2)` on `[[-2, 2], [-2, 2], [-2, 2]]`. 
@@ -67,4 +67,4 @@ This function has a minimum of `-4` at `(x, y, z) = (-2, 0, -2)` on `[[-2, 2], [
 def f_3(x, y, z):
     return x + y**2 + z
 ```
-![Plot of example function for solver_3](solver_3.png)
+![Plot of example function for solver_3](example_3.png)

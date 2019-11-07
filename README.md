@@ -98,7 +98,7 @@ def temperature(self, step):
 `step` runs from `0` to `max_steps - 1`.
 
 ##### `format_output(self, output)`
-This method is given as an option for post-processing the results of the `anneal()` method.
+This method is given as an option for post-processing the results of `anneal()`.
 
 `output` is of the form `(best_state, best_energy)`.
 
@@ -110,7 +110,7 @@ def format_output(self, output):
     return output[0]
 ```
 ##### `debug_method(self)`
-This is run at the start of every step when the `anneal` method is set with `debug=True`.
+This is run at the start of every step when `debug=True`.
 
 ###### Example
 ```python

@@ -14,6 +14,7 @@ n_points = 20
 max_steps = 6000
 cities = np.random.rand(n_points, 2)
 
+print("Finding shortest path for:\n\n{}\n".format(cities))
 solver = tsp.TravelingSalesPerson(cities, max_steps)
 _, energy = solver.anneal(verbose=2)
 
