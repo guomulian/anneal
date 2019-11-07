@@ -15,7 +15,7 @@ class SudokuSolver(anneal.BaseAnnealer):
     and 3x3 block.
     """
 
-    def __init__(self, puzzle, max_steps):
+    def __init__(self, puzzle, *args, **kwargs):
         if not all(all(e in range(10) for e in row) for row in puzzle):
             raise ValueError('Cells in the board must be in [0,9] (where 0 \
                   represents an empty cell).')
@@ -29,7 +29,7 @@ class SudokuSolver(anneal.BaseAnnealer):
         # these, not the pre-filled cells
         self.unknown = unknown
 
-        super().__init__(initial_state, max_steps)
+        super().__init__(initial_state, *args, **kwargs)
 
     @staticmethod
     def pretty_print(board):  # pragma: no cover

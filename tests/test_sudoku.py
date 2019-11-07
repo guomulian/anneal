@@ -6,13 +6,6 @@ import os
 
 
 @pytest.fixture
-def solver():
-    def _solver(puzzle, max_steps=1000):
-        return SudokuSolver(puzzle, max_steps)
-    return _solver
-
-
-@pytest.fixture
 def puzzle_all_zeros():
     return [[0 for _ in range(9)] for _ in range(9)]
 
@@ -108,9 +101,9 @@ def test_energy_correct(puzzle_all_zeros, puzzle_valid_solution):
     assert SudokuSolver.energy_method(None, puzzle_valid_solution) == -162
 
 
-def test_neighbor_switches_two_in_same_block(solver, puzzle_valid, grid):
+def test_neighbor_switches_two_in_same_block(puzzle_valid, grid):
     random.seed(0)
-    s = solver(puzzle_valid)
+    s = SudokuSolver(puzzle_valid)
     state = s.initial_state
     neighbor = s.neighbor(state)
 
@@ -133,21 +126,21 @@ def test_neighbor_switches_two_in_same_block(solver, puzzle_valid, grid):
     assert sum(all(p in block for p in diffs) for block in blocks) == 1
 
 
-def test_neighbor_on_already_solved(solver, puzzle_valid_solution):
+def test_neighbor_on_already_solved(puzzle_valid_solution):
     random.seed(0)
-    s = solver(puzzle_valid_solution)
+    s = SudokuSolver(puzzle_valid_solution)
     state = s.initial_state
     neighbor = s.neighbor(state)
 
     assert state == neighbor
 
 
-def test_energy_break_on_solved_puzzle(tmpdir, solver, puzzle_valid_solution):
+def test_energy_break_on_solved_puzzle(tmpdir, puzzle_valid_solution):
     random.seed(0)
     file = tmpdir.join(helpers.generate_filename(SudokuSolver, ".pickle"))
     rounds = 3
 
-    s = solver(puzzle_valid_solution)
+    s = SudokuSolver(puzzle_valid_solution)
     s.anneal(pickle=True, pickle_file=file, energy_break_rounds=rounds,
              energy_break_tol=0.05)
 

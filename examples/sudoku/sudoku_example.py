@@ -26,10 +26,10 @@ if __name__ == '__main__':
                 [7, 6, 3, 4, 1, 8, 2, 5, 9]]
 
     max_steps = 1000
-    solver = sudoku.SudokuSolver(puzzle, max_steps)
+    solver = sudoku.SudokuSolver(puzzle, max_steps=max_steps)
+
     print("Solving puzzle with max_steps = {}:".format(max_steps))
     solver.pretty_print(solver.puzzle)
-
     solver.anneal()
 
     print("\nSOLUTION:")

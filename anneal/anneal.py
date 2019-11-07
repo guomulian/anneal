@@ -101,6 +101,14 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         else:
             raise ValueError("Max steps must be a positive integer.")
 
+    @property
+    def last_exit(self):
+        """Prints the type of exit of the last run of anneal()."""
+        try:
+            return self.__last_exit
+        except AttributeError:
+            return None
+
     def copy_method(self, state):
         """Method for copying states; this may be overwritten.
 
@@ -335,8 +343,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                 self.__energy_queue.append(energy)
 
     def _handle_exit(self, exit):
-        if self.__verbose != 0:
-            messages = {
+        messages = {
                 "energy": "Energy within tolerance for {} rounds (tol = {})."
                           .format(self.__energy_break_rounds,
                                   self.__energy_break_tol),
@@ -346,6 +353,9 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                              .format(self.max_steps)
                 }
 
+        self.__last_exit = messages[exit]
+
+        if self.__verbose != 0:
             logging.info("Finished - " + messages[exit])
 
     def anneal(self, *args, **kwargs):
