@@ -31,7 +31,7 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         else:
             self.max_steps = self.defaults["max_steps"]
 
-        self._reset(*args, **kwargs)
+        self._reset()
 
     def __str__(self):
         return "{}(step={}/{}: energy={})".format(type(self).__name__,
@@ -60,6 +60,13 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
     def max_steps(self):
         """The maximum number of steps anneal() is allowed to take."""
         return self._max_steps
+
+    @max_steps.setter
+    def max_steps(self, value):
+        if isinstance(value, int) and value > 0:
+            self._max_steps = value
+        else:
+            raise ValueError("Max steps must be a positive integer.")
 
     @property
     def energy(self):
@@ -94,28 +101,21 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         """
         return self.__energy_queue
 
-    @max_steps.setter
-    def max_steps(self, value):
-        if isinstance(value, int) and value > 0:
-            self._max_steps = value
-        else:
-            raise ValueError("Max steps must be a positive integer.")
-
     @property
     def last_exit(self):
-        """Prints the type of exit of the last run of anneal()."""
+        """Returns the type of exit of the last run of anneal()."""
         try:
             return self.__last_exit
         except AttributeError:
             return None
 
-    def copy_method(self, state):
-        """Method for copying states; this may be overwritten.
-
-        Default is copy.deepcopy(). This may not be the most efficient option
-        for certain problems.
-        """
-        return copy.deepcopy(state)
+    @property
+    def last_pickle(self):
+        """Returns the filename of the last file pickled to."""
+        try:
+            return self.__last_pickle
+        except AttributeError:
+            return None
 
     def _reset(self, *args, **kwargs):
         """Resets the state of the annealer with the given options."""
@@ -140,7 +140,6 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
                 "energy_break_tol", self.defaults["energy_break_tol"])
         self.__temp_tol = kwargs.get(
                 "temp_tol", self.defaults["temp_tol"])
-        self.__last_pickle = None
 
         best_state = kwargs.get("best_state", None)
 
@@ -246,6 +245,14 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         """
         print(self)
 
+    def copy_method(self, state):
+        """Method for copying states; this may be overwritten.
+
+        Default is copy.deepcopy(). This may not be the most efficient option
+        for certain problems.
+        """
+        return copy.deepcopy(state)
+
     def _handle_debug(self):
         """Takes care of debugging with different verbosity options."""
         if self.__debug:
@@ -294,22 +301,15 @@ class BaseAnnealer(metaclass=abc.ABCMeta):
         latest file pickled by anneal.
         """
         if not filename:
-            if self.__last_pickle is not None:
-                filename = self.__last_pickle
+            if self.last_pickle is not None:
+                filename = self.last_pickle
             else:
                 raise FileNotFoundError(
                     "Could not find anything to unpickle. Try first running "
                     "anneal() with pickle=True, or run unpickle_states() with "
                     "a filename specified.")
 
-        states = []
-
-        with open(filename, 'rb') as file:
-            while True:
-                try:
-                    states.append(pickle.load(file))
-                except EOFError:
-                    break
+        states = helpers.unpickle_objects(filename)
 
         return states
 

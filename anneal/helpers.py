@@ -1,6 +1,7 @@
 import copy
 import math
 import numpy as np
+import pickle
 import time
 import timeit
 
@@ -25,6 +26,20 @@ def generate_filename(obj, extension):
     timestamp = time.strftime("-%Y%m%d-%H%M%S")
     filename = obj.__class__.__name__ + timestamp + extension
     return filename
+
+
+def unpickle_objects(filename):
+    """Unloads the objects pickled in a given file."""
+    objects = []
+
+    with open(filename, 'rb') as file:
+        while True:
+            try:
+                objects.append(pickle.load(file))
+            except EOFError:
+                break
+
+    return objects
 
 
 def timed(function):
